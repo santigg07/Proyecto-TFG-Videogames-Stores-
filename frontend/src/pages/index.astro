@@ -1,0 +1,51 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Tienda de Videojuegos">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Tienda de Videojuegos</h1>
+    
+    <div id="games-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Los juegos se cargarán aquí -->
+      <p>Cargando juegos...</p>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { getGames } from '../utils/api';
+
+  type Game = {
+    name: string;
+    price: number;
+  };
+  
+  async function loadGames() {
+    const gamesContainer = document.getElementById('games-container');
+    if (!gamesContainer) {
+      console.error('Error: gamesContainer not found.');
+      return;
+    }
+    
+    const { data }: { data: Game[] } = await getGames();
+    
+    if (data.length === 0) {
+      gamesContainer.innerHTML = '<p>No hay juegos disponibles.</p>';
+      return;
+    }
+    
+    gamesContainer.innerHTML = data.map((game: Game) => `
+      <div class="border rounded-lg p-4 shadow-md">
+        <h2 class="text-xl font-semibold">${game.name}</h2>
+        <p class="text-gray-700 mt-2">$${game.price}</p>
+        <button class="bg-blue-500 text-white px-4 py-2 rounded mt-4 hover:bg-blue-600">
+          Añadir al carrito
+        </button>
+      </div>
+    `).join('');
+  }
+  
+  // Cargar juegos cuando el DOM esté listo
+  document.addEventListener('DOMContentLoaded', loadGames);
+</script>
