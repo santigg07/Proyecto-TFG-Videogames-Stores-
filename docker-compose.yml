@@ -1,22 +1,23 @@
-version: '3'
 
 services:
+  # Servicio Frontend
   frontend:
     build:
-      context: .
-      dockerfile: ./docker/frontend/Dockerfile
+      context: ./frontend
+      # No necesitas especificar dockerfile si está en la ubicación por defecto (./Dockerfile)
     ports:
-      - "3000:3000"
+      - "4321:4321"
     volumes:
       - ./frontend:/app
       - /app/node_modules
     depends_on:
       - backend
 
+  # Servicio Backend
   backend:
     build:
-      context: .
-      dockerfile: ./docker/backend/Dockerfile
+      context: ./backend
+      # No necesitas especificar dockerfile si está en la ubicación por defecto (./Dockerfile)
     ports:
       - "8000:8000"
     volumes:
@@ -30,6 +31,7 @@ services:
       DB_USERNAME: laravel
       DB_PASSWORD: laravel
 
+  # Servicio de Base de Datos    
   db:
     image: mysql:8.0
     ports:
@@ -41,6 +43,18 @@ services:
       MYSQL_ROOT_PASSWORD: root
     volumes:
       - mysql_data:/var/lib/mysql
+
+  # Servicio phpMyAdmin    
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - db
 
 volumes:
   mysql_data:
