@@ -1,7 +1,7 @@
 ---
-import MainLayout from '../layouts/MainLayout.astro';
-import ProductCard from '../components/products/ProductCard.astro';
-import "../styles/global.css";
+import MainLayout from "../../../layouts/MainLayout.astro";
+import ProductCard from '../../../components/products/ProductCard.astro';
+import "../../../styles/global.css";
 
 // Simulación de datos para la demo
 const featuredGames = [
@@ -12,56 +12,14 @@ const featuredGames = [
     imageUrl: '/assets/images/games/mario64.jpg',
     price: 79.99
   },
-  {
-    id: 2,
-    title: 'Mario Kart 64',
-    console: 'Nintendo 64',
-    imageUrl: '/assets/images/games/Mario_Kart_64.jpg',
-    price: 69.99
-  },
-  {
-    id: 3,
-    title: 'Super Metroid',
-    console: 'Super Nintendo',
-    imageUrl: '/assets/images/games/metroid.jpg',
-    price: 89.99
-  },
-  {
-    id: 4,
-    title: 'Paper Mario',
-    console: 'Nintendo 64',
-    imageUrl: '/assets/images/games/paper mario.jpg',
-    price: 74.99
-  },
-  {
-    id: 5,
-    title: 'Super Mario 3',
-    console: 'Nintendo',
-    imageUrl: '/assets/images/games/super mario 3.jpg',
-    price: 59.99
-  },
-  {
-    id: 6,
-    title: 'Super Mario',
-    console: 'Nintendo',
-    imageUrl: '/assets/images/games/super mario.jpg',
-    price: 49.99
-  }
+ 
+
 ];
 ---
 
 <MainLayout title="Retro Time - Tienda de Videojuegos Retro">
   <main>
-    <!-- Hero Section -->
-    <section class="bg-gray-900 text-white py-16">
-      <div class="container mx-auto px-4 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-6">Revive la magia de los clásicos</h1>
-        <p class="text-xl mb-8">Tu destino para videojuegos retro en perfecto estado</p>
-        <a href="/games" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300">
-          Ver catálogo
-        </a>
-      </div>
-    </section>
+
 
     <!-- Nuevas Entradas Section -->
     <section class="py-12 bg-black">
@@ -80,11 +38,7 @@ const featuredGames = [
           ))}
         </div>
         
-        <div class="text-center mt-12">
-          <a href="/games" class="inline-block border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white font-bold py-2 px-6 rounded-lg transition duration-300">
-            Ver todos los juegos
-          </a>
-        </div>
+       
       </div>
     </section>
 

@@ -10,6 +10,17 @@ export default defineConfig({
   integrations: [react()],
 
   vite: {
-    plugins: [tailwindcss()]
-  }
+    plugins: [tailwindcss()],
+    server: {
+      watch: {
+        usePolling: true,
+        interval: 1000
+      }
+    }
+  },
+
+  server: {
+    host: '0.0.0.0',
+    port: 4321,
+  },
 });

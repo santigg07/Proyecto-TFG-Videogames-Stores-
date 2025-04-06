@@ -1,0 +1,469 @@
+---
+// Sidebar.astro
+const { username = 'Usuario', email = 'usuario@example.com' } = Astro.props;
+---
+
+<div id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-container">
+      <div class="logo">
+        <img src="/assets/images/logo-icon.png" alt="Logo" onerror="this.src='/assets/images/fallback-icon.png'; this.onerror=null;">
+      </div>
+      <div class="brand-name">Retro Time</div>
+    </div>
+    <button id="sidebar-toggle" class="sidebar-toggle">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+  </div>
+
+  <div class="sidebar-content">
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span class="nav-text">Inicio</span>
+      </a>
+      <a href="/games" class="nav-item">
+        <i class="fas fa-gamepad"></i>
+        <span class="nav-text">Catálogo</span>
+      </a>
+      <a href="/cart" class="nav-item">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="nav-text">Carrito</span>
+      </a>
+    </nav>
+
+    <div class="section-header">
+      <span>PLATAFORMAS</span>
+      <button class="toggle-section">
+        <i class="fas fa-chevron-down"></i>
+      </button>
+    </div>
+    <div class="section-content">
+      <a href="/games/nintendo" class="nav-item">
+        <i class="fas fa-gamepad"></i>
+        <span class="nav-text">Nintendo</span>
+      </a>
+      <a href="/games/playstation" class="nav-item">
+        <i class="fas fa-gamepad"></i>
+        <span class="nav-text">PlayStation</span>
+      </a>
+      <a href="/games/xbox" class="nav-item">
+        <i class="fas fa-gamepad"></i>
+        <span class="nav-text">Xbox</span>
+      </a>
+      <a href="/games/sega" class="nav-item">
+        <i class="fas fa-gamepad"></i>
+        <span class="nav-text">Sega</span>
+      </a>
+    </div>
+
+    <div class="section-header">
+      <span>MI CUENTA</span>
+      <button class="toggle-section">
+        <i class="fas fa-chevron-down"></i>
+      </button>
+    </div>
+    <div class="section-content">
+      <a href="/profile" class="nav-item">
+        <i class="fas fa-user"></i>
+        <span class="nav-text">Perfil</span>
+      </a>
+      <a href="/orders" class="nav-item">
+        <i class="fas fa-shopping-bag"></i>
+        <span class="nav-text">Mis pedidos</span>
+      </a>
+      <a href="/wishlist" class="nav-item">
+        <i class="fas fa-heart"></i>
+        <span class="nav-text">Lista de deseos</span>
+      </a>
+      <a href="/settings" class="nav-item">
+        <i class="fas fa-cog"></i>
+        <span class="nav-text">Configuración</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-profile">
+      <div class="avatar">
+        <img src="/assets/images/avatar-placeholder.png" alt="Avatar" onerror="this.src='/assets/images/fallback-avatar.png'; this.onerror=null;">
+      </div>
+      <div class="user-info">
+        <div class="username">{username}</div>
+        <div class="email">{email}</div>
+      </div>
+      <button class="settings-button">
+        <i class="fas fa-cog"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+<style>
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background-color: #151c28;
+    color: #fff;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar.collapsed {
+    width: 60px;
+  }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid #2a344a;
+  }
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .logo {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .brand-name {
+    font-size: 18px;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+
+  .sidebar-toggle {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+  }
+
+  .sidebar-toggle:hover {
+    color: #fff;
+  }
+
+  .sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+  }
+
+  .sidebar-nav {
+    margin-bottom: 20px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    color: #a0aec0;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .nav-item:hover {
+    background-color: #1e293b;
+    color: #fff;
+  }
+
+  .nav-item i {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+    margin-right: 10px;
+  }
+
+  .nav-text {
+    white-space: nowrap;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-top: 1px solid #2a344a;
+    cursor: pointer;
+  }
+
+  .toggle-section {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .section-content {
+    display: block;
+    overflow: hidden;
+  }
+
+  .section-content.collapsed {
+    display: none;
+  }
+
+  .sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid #2a344a;
+  }
+
+  .user-profile {
+    display: flex;
+    align-items: center;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 10px;
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .user-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .username {
+    font-weight: bold;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .email {
+    font-size: 12px;
+    color: #a0aec0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .settings-button {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+    font-size: 16px;
+    margin-left: 10px;
+  }
+
+  /* Collapsed state styles */
+  .sidebar.collapsed .logo-container {
+    justify-content: center;
+  }
+
+  .sidebar.collapsed .brand-name,
+  .sidebar.collapsed .nav-text,
+  .sidebar.collapsed .section-header span,
+  .sidebar.collapsed .user-info,
+  .sidebar.collapsed .settings-button {
+    display: none;
+  }
+
+  .sidebar.collapsed .logo {
+    margin-right: 0;
+  }
+
+  .sidebar.collapsed .sidebar-toggle i {
+    transform: rotate(180deg);
+  }
+
+  .sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 10px 0;
+  }
+
+  .sidebar.collapsed .nav-item i {
+    margin-right: 0;
+  }
+
+  .sidebar.collapsed .section-header {
+    justify-content: center;
+    padding: 10px 0;
+  }
+
+  .sidebar.collapsed .toggle-section {
+    display: none;
+  }
+
+  .sidebar.collapsed .avatar {
+    margin-right: 0;
+  }
+
+  .sidebar.collapsed .user-profile {
+    justify-content: center;
+  }
+  
+  /* Fix for collapsed sidebar */
+  .sidebar.collapsed .section-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .sidebar.collapsed .section-content .nav-item {
+    width: 100%;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Overlay for mobile */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+
+  /* Media queries */
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+    }
+
+    .sidebar.mobile-open {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const sectionToggles = document.querySelectorAll('.toggle-section');
+    const mainContent = document.querySelector('.main-content');
+    
+    // Toggle sidebar collapse
+    if (sidebarToggle) {
+      sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        
+        // Update main content margin
+        if (mainContent) {
+          if (sidebar.classList.contains('collapsed')) {
+            mainContent.style.marginLeft = '60px';
+          } else {
+            mainContent.style.marginLeft = '260px';
+          }
+        }
+
+        // Rotate the icon
+        const icon = sidebarToggle.querySelector('i');
+        if (icon) {
+          if (sidebar.classList.contains('collapsed')) {
+            icon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+          } else {
+            icon.classList.replace('fa-chevron-right', 'fa-chevron-left');
+          }
+        }
+      });
+    }
+
+    // Toggle sections
+    sectionToggles.forEach(toggle => {
+      toggle.addEventListener('click', (e) => {
+        const sectionContent = e.currentTarget.parentElement.nextElementSibling;
+        
+        // Don't toggle if sidebar is collapsed
+        if (sidebar.classList.contains('collapsed')) {
+          return;
+        }
+        
+        sectionContent.classList.toggle('collapsed');
+        
+        // Rotate icon
+        const icon = e.currentTarget.querySelector('i');
+        if (icon) {
+          if (sectionContent.classList.contains('collapsed')) {
+            icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
+          } else {
+            icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
+          }
+        }
+      });
+    });
+
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-toggle');
+    if (mobileMenuButton) {
+      mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.add('mobile-open');
+        sidebar.classList.remove('collapsed'); // Ensure sidebar is expanded when opened on mobile
+        sidebarOverlay.classList.add('active');
+      });
+    }
+
+    // Close mobile menu when clicking overlay
+    if (sidebarOverlay) {
+      sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.remove('mobile-open');
+        sidebarOverlay.classList.remove('active');
+      });
+    }
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        if (sidebarOverlay) {
+          sidebarOverlay.classList.remove('active');
+        }
+        sidebar.classList.remove('mobile-open');
+      }
+    });
+  });
+</script>

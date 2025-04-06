@@ -2,10 +2,12 @@
   "extends": "astro/tsconfigs/strict",
   "include": [
     ".astro/types.d.ts",
-    "**/*"
+    "src/**/*"
   ],
   "exclude": [
-    "dist"
+    "dist",
+    "src/components",
+    "src/pages"
   ],
   "compilerOptions": {
     "jsx": "react-jsx",

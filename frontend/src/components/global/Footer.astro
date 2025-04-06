@@ -1,0 +1,69 @@
+---
+// Footer.astro
+---
+
+<footer class="bg-gray-900 text-gray-300 py-10">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        
+        <!-- Compañía -->
+        <div>
+          <h3 class="text-white font-bold text-lg border-b border-red-600 pb-2 mb-4">Compañía</h3>
+          <ul class="space-y-2">
+            <li><a href="/nosotros" class="hover:text-white transition duration-300">Nosotros</a></li>
+            <li><a href="/politica-de-privacidad" class="hover:text-white transition duration-300">Política de privacidad</a></li>
+          </ul>
+        </div>
+        
+        <!-- Ayuda -->
+        <div>
+          <h3 class="text-white font-bold text-lg border-b border-red-600 pb-2 mb-4">Ayuda</h3>
+          <ul class="space-y-2">
+            <li><a href="/contacto" class="hover:text-white transition duration-300">Contacto</a></li>
+            <li><a href="/faq" class="hover:text-white transition duration-300">Preguntas frecuentes</a></li>
+            <li><a href="/envios" class="hover:text-white transition duration-300">Envíos y devoluciones</a></li>
+          </ul>
+        </div>
+        
+        <!-- Mantente al día -->
+        <div>
+          <h3 class="text-white font-bold text-lg border-b border-red-600 pb-2 mb-4">Mantente al día</h3>
+          <p class="mb-4">Suscríbete a nuestra newsletter para recibir las últimas novedades y ofertas</p>
+          <form class="flex">
+            <input 
+              type="email" 
+              placeholder="Email Address" 
+              class="bg-gray-800 text-white px-4 py-2 rounded-l-lg w-full focus:outline-none focus:ring-2 focus:ring-red-600"
+            >
+            <button 
+              type="submit" 
+              class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-r-lg transition duration-300"
+            >
+              Enviar
+            </button>
+          </form>
+        </div>
+        
+        <!-- Síguenos -->
+        <div>
+          <h3 class="text-white font-bold text-lg border-b border-red-600 pb-2 mb-4">Síguenos</h3>
+          <div class="flex space-x-4">
+            <a href="https://instagram.com" target="_blank" class="text-2xl hover:text-red-500 transition duration-300">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://twitter.com" target="_blank" class="text-2xl hover:text-blue-400 transition duration-300">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://youtube.com" target="_blank" class="text-2xl hover:text-red-600 transition duration-300">
+              <i class="fab fa-youtube"></i>
+            </a>
+          </div>
+        </div>
+        
+      </div>
+      
+      <div class="border-t border-gray-800 mt-8 pt-6 text-center">
+        <p>&copy; {new Date().getFullYear()} Retro Time. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
