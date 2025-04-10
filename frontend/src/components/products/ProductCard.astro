@@ -1,43 +1,30 @@
 ---
-// ProductCard.astro
-// Recibe las propiedades necesarias para mostrar un producto
-interface Props {
-  id: number;
-  title: string;
-  console: string;
-  imageUrl: string;
-  price: number;
-}
+// src/components/products/ProductCard.astro
+const { id, title, console, consoleSlug, imageUrl, price, slug } = Astro.props;
 
-const { id, title, console, imageUrl, price } = Astro.props;
-
-// Formato de precio
-const formattedPrice = new Intl.NumberFormat('es-ES', {
-  style: 'currency',
-  currency: 'EUR'
-}).format(price);
+// Formatear precio con dos decimales
+const formattedPrice = typeof price === 'number' ? price.toFixed(2) : price;
 ---
 
-<div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-  <a href={`/games/nintendo/mario64/`} class="block">
-    <div class="relative pb-[100%] bg-gray-900">
-      <img 
-        src={imageUrl} 
-        alt={title} 
-        class="absolute inset-0 w-full h-full object-contain p-4"
-      />
+<div class="game-card bg-gray-800 rounded-lg overflow-hidden hover:transform hover:scale-105 transition-transform duration-300">
+  <a href={`/games/${consoleSlug}/${slug}`} class="block">
+    <div class="game-image bg-gray-900 aspect-square flex items-center justify-center">
+      <img src={imageUrl} alt={title} class="max-w-full max-h-full p-4 object-contain" />
     </div>
     
-    <div class="p-4 text-center">
-      <h3 class="text-white font-bold text-lg mb-1">{title}</h3>
-      <p class="text-gray-400 text-sm mb-3">{console}</p>
-      <div class="flex justify-between items-center">
-        <span class="text-white font-bold text-xl">{formattedPrice}</span>
+    <div class="game-info p-4">
+      <h3 class="game-title font-bold text-white truncate">{title}</h3>
+      <p class="game-console text-gray-400 text-sm">{console}</p>
+      
+      <div class="flex justify-between items-center mt-3">
+        <span class="game-price font-bold text-white">{formattedPrice} €</span>
         <button 
-          class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-lg transition duration-300 text-sm"
-          onclick="addToCart(event, {id})"
+          class="add-to-cart bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+          data-id={id}
+          data-name={title}
+          data-price={price}
         >
-          <i class="fas fa-shopping-cart mr-1"></i> Añadir
+          Añadir
         </button>
       </div>
     </div>
@@ -45,10 +32,27 @@ const formattedPrice = new Intl.NumberFormat('es-ES', {
 </div>
 
 <script>
-  // Función simple que será reemplazada por lógica de React
-  function addToCart(event, id) {
-    event.preventDefault();
-    console.log(`Producto ${id} añadido al carrito`);
-    // Aquí posteriormente se conectará con el store de React
-  }
+  // Script para manejar el botón "Añadir" (opcional, si quieres que funcione directamente desde la tarjeta)
+  document.querySelectorAll('.add-to-cart').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault(); // Evita navegar a la página de detalle al hacer clic en el botón
+      
+      const id = button.getAttribute('data-id');
+      const name = button.getAttribute('data-name');
+      const price = parseFloat(button.getAttribute('data-price') || '0');
+      
+      // Lógica para añadir al carrito (similar a la de la página de detalle)
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const existingItem = cart.find(item => item.id === id);
+      
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        cart.push({ id, name, price, quantity: 1 });
+      }
+      
+      localStorage.setItem('cart', JSON.stringify(cart));
+      alert(`${name} ha sido añadido al carrito.`);
+    });
+  });
 </script>
