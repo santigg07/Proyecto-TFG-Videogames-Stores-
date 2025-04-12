@@ -34,7 +34,7 @@ El proyecto sigue un enfoque híbrido:
   - Carrito de compras, Proceso de pago, Búsqueda en vivo, Lista de deseos
 
 ## 📦 Estructura del Proyecto
-videogames-store/
+```videogames-store/
 │
 ├── frontend/                      # Proyecto Astro + React
 │   ├── public/                    # Archivos estáticos
@@ -59,6 +59,7 @@ videogames-store/
 │   └── ...
 │
 └── docker-compose.yml             # Configuración Docker
+```
 
 ## 🚀 Instalación y Configuración
 
