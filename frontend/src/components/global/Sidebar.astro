@@ -38,11 +38,38 @@ const { username = 'Usuario', email = 'usuario@example.com' } = Astro.props;
         <i class="fas fa-chevron-down"></i>
       </button>
     </div>
+    
     <div class="section-content">
-      <a href="/games/nintendo" class="nav-item">
-        <i class="fas fa-gamepad"></i>
-        <span class="nav-text">Nintendo</span>
-      </a>
+      <!-- Nintendo con submenu -->
+      <div class="submenu-container">
+        <div class="submenu-header nav-item">
+          <i class="fas fa-gamepad"></i>
+          <span class="nav-text">Nintendo</span>
+          <button class="toggle-submenu">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="submenu-content">
+          <a href="/games/nintendo-nes" class="nav-item submenu-item">
+            <i class="fas fa-circle"></i>
+            <span class="nav-text">NES</span>
+          </a>
+          <a href="/games/super-nintendo" class="nav-item submenu-item">
+            <i class="fas fa-circle"></i>
+            <span class="nav-text">SNES</span>
+          </a>
+          <a href="/games/nintendo-64" class="nav-item submenu-item">
+            <i class="fas fa-circle"></i>
+            <span class="nav-text">Nintendo 64</span>
+          </a>
+          <a href="/games/nintendo-gamecube" class="nav-item submenu-item">
+            <i class="fas fa-circle"></i>
+            <span class="nav-text">GameCube</span>
+          </a>
+        </div>
+      </div>
+      
+      <!-- Otras plataformas -->
       <a href="/games/playstation" class="nav-item">
         <i class="fas fa-gamepad"></i>
         <span class="nav-text">PlayStation</span>
@@ -51,7 +78,7 @@ const { username = 'Usuario', email = 'usuario@example.com' } = Astro.props;
         <i class="fas fa-gamepad"></i>
         <span class="nav-text">Xbox</span>
       </a>
-      <a href="/games/sega" class="nav-item">
+      <a href="/games/sega-genesis" class="nav-item">
         <i class="fas fa-gamepad"></i>
         <span class="nav-text">Sega</span>
       </a>
@@ -237,6 +264,58 @@ const { username = 'Usuario', email = 'usuario@example.com' } = Astro.props;
     display: none;
   }
 
+  /* Submenu styles parte nueva para el submeno de las consola*/
+  .submenu-container {
+    position: relative;
+  }
+
+  .submenu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+
+  .submenu-header .nav-text {
+    flex: 1;
+  }
+
+  .toggle-submenu {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+  }
+
+  .toggle-submenu:hover {
+    color: #fff;
+  }
+
+  .submenu-content {
+    display: none;
+    padding-left: 15px;
+    border-left: 1px solid #2a344a;
+    margin-left: 22px;
+  }
+
+  .submenu-content.active {
+    display: block;
+  }
+
+  .submenu-item {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .submenu-item i {
+    font-size: 8px;
+  } /* Fin de la parte Submenu styles parte nueva para el submeno de las consola*/
+
   .sidebar-footer {
     padding: 16px;
     border-top: 1px solid #2a344a;
@@ -300,7 +379,8 @@ const { username = 'Usuario', email = 'usuario@example.com' } = Astro.props;
   .sidebar.collapsed .nav-text,
   .sidebar.collapsed .section-header span,
   .sidebar.collapsed .user-info,
-  .sidebar.collapsed .settings-button {
+  .sidebar.collapsed .settings-button,
+  .sidebar.collapsed .toggle-submenu {
     display: none;
   }
 
@@ -352,6 +432,28 @@ const { username = 'Usuario', email = 'usuario@example.com' } = Astro.props;
     justify-content: center;
   }
 
+  /* Collapsed sidebar submenu handling */
+  .sidebar.collapsed .submenu-content {
+    position: absolute;
+    left: 60px;
+    top: 0;
+    background-color: #1e293b;
+    border: 1px solid #2a344a;
+    border-radius: 4px;
+    padding: 5px 0;
+    width: 200px;
+    z-index: 10;
+    margin-left: 0;
+  }
+
+  .sidebar.collapsed .submenu-content.active {
+    display: none;
+  }
+
+  .sidebar.collapsed .submenu-container:hover .submenu-content {
+    display: block;
+  }
+
   /* Overlay for mobile */
   .sidebar-overlay {
     position: fixed;
@@ -386,6 +488,7 @@ const { username = 'Usuario', email = 'usuario@example.com' } = Astro.props;
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
     const sectionToggles = document.querySelectorAll('.toggle-section');
+    const submenuToggles = document.querySelectorAll('.toggle-submenu');
     const mainContent = document.querySelector('.main-content');
     
     // Toggle sidebar collapse
@@ -433,6 +536,57 @@ const { username = 'Usuario', email = 'usuario@example.com' } = Astro.props;
             icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
           } else {
             icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
+          }
+        }
+      });
+    });
+
+    // Toggle submenus
+    submenuToggles.forEach(toggle => {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent propagation to parent items
+        
+        // Don't toggle if sidebar is collapsed - we use hover for that case
+        if (sidebar.classList.contains('collapsed')) {
+          return;
+        }
+        
+        const submenuContent = e.currentTarget.closest('.submenu-container').querySelector('.submenu-content');
+        submenuContent.classList.toggle('active');
+        
+        // Rotate icon
+        const icon = e.currentTarget.querySelector('i');
+        if (icon) {
+          if (submenuContent.classList.contains('active')) {
+            icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
+          } else {
+            icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
+          }
+        }
+      });
+    });
+
+    // Also toggle submenu when clicking on the submenu header
+    document.querySelectorAll('.submenu-header').forEach(header => {
+      header.addEventListener('click', (e) => {
+        // Don't toggle if sidebar is collapsed - we use hover for that case
+        if (sidebar.classList.contains('collapsed')) {
+          return;
+        }
+        
+        // Only toggle if the target is not the toggle button itself (that's handled above)
+        if (!e.target.closest('.toggle-submenu')) {
+          const submenuContent = e.currentTarget.closest('.submenu-container').querySelector('.submenu-content');
+          submenuContent.classList.toggle('active');
+          
+          // Rotate icon on the toggle button
+          const icon = e.currentTarget.querySelector('.toggle-submenu i');
+          if (icon) {
+            if (submenuContent.classList.contains('active')) {
+              icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
+            } else {
+              icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
+            }
           }
         }
       });

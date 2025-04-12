@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*','storage/*', 'sanctum/csrf-cookie'],
+    // 'allowed_origins' => ['http://localhost:4321', 'http://frontend:4321'], por si falla la conexión entre backend y frontend
     'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:4321')],
     'allowed_methods' => ['*'],
     'allowed_headers' => ['*'],

@@ -1,301 +1,198 @@
 ---
 // src/pages/games/[console]/[slug].astro
-// Indica a Astro que esta página debe renderizarse bajo demanda, no pre-renderizarse
-export const prerender = false;
 import MainLayout from '../../../layouts/MainLayout.astro';
-import { getGameDetails } from '../../../utils/api';
+import { getBackendImageUrl } from '../../../utils/image-utils';
+import "../../../styles/global.css";
 
 // Obtener parámetros de la URL
 const { console: consoleSlug, slug } = Astro.params;
+console.log("Parámetros de URL:", { consoleSlug, slug });
 
-// Variables para almacenar los datos
-let game;
-let relatedGames: { console: { slug: string; name: string }; slug: string; name: string; image?: string; sale_price?: number; price: number }[] = [];
+// Variables para almacenar datos
+interface GameData {
+  game?: {
+    id: string | number;
+    name: string;
+    image?: string;
+    description?: string;
+    price: number;
+    sale_price?: number;
+    stock: number;
+    manufacturer?: string;
+    release_year?: number;
+    condition?: string;
+    includes?: string;
+  };
+  relatedGames?: Array<{
+    id: string | number;
+    name: string;
+    slug: string;
+    image?: string;
+    price: number;
+    sale_price?: number;
+    console?: {
+      slug: string;
+      name: string;
+    };
+  }>;
+}
+
+interface ConsoleData {
+  id: string | number;
+  name: string;
+  slug: string;
+  manufacturer?: string;
+  image?: string;
+}
+
+let gameData: GameData | null = null;
+let consoleData: ConsoleData | null = null;
 let error: string | null = null;
 
+const API_URL = 'http://backend:8000/api';
+
 try {
-  // Obtener detalles del juego y juegos relacionados
-  const data = await getGameDetails(slug);
-  game = data.game;
-  relatedGames = data.relatedGames || [];
+  // Obtener datos del juego directamente
+  const gameResponse = await fetch(`${API_URL}/games/${slug}`);
   
-  // Verificar que el juego pertenece a la consola indicada en la URL
-  if (game.console.slug !== consoleSlug) {
-    // Si no coincide, redirigir a la URL correcta
-    return Astro.redirect(`/games/${game.console.slug}/${slug}`);
+  if (gameResponse.ok) {
+    gameData = await gameResponse.json();
+    
+    // Obtener datos de la consola
+    const consoleResponse = await fetch(`${API_URL}/consoles/${consoleSlug}`);
+    
+    if (consoleResponse.ok) {
+      consoleData = await consoleResponse.json();
+    } else {
+      error = `Error al cargar la consola: ${consoleResponse.status}`;
+    }
+  } else {
+    error = `Error al cargar el juego: ${gameResponse.status}`;
   }
-} catch (err) {
-  console.error("Error fetching game details:", err);
-  error = "No se pudo cargar la información del juego. Por favor, inténtalo de nuevo más tarde.";
+} catch (err: any) {
+  error = `Error de conexión: ${err.message}`;
 }
 
-// Si no se encuentra el juego, redirigir a 404
-if (!game && !error) {
-  return Astro.redirect('/404');
+// Función para construir la URL de imagen correctamente
+function getImageUrl(imagePath) {
+  if (!imagePath) return '/assets/images/placeholder.png';
+  
+  // Si la ruta ya incluye /storage/, no la modifiques
+  if (imagePath.startsWith('/storage/')) return imagePath;
+  
+  // Si la ruta empieza con 'games/', añade /storage/ al inicio
+  if (imagePath.startsWith('games/')) return `/storage/${imagePath}`;
+  
+  // En cualquier otro caso, asume que es una ruta relativa a storage/games/
+  return `/storage/games/${imagePath}`;
 }
 
-// Título de la página
-const title = game ? `${game.name} - ${game.console.name} - Retro Time` : "Juego no encontrado - Retro Time";
-
-// Preparar imágenes
-const mainImage = game?.image ? `/storage/${game.image}` : '/placeholder.jpg';
-const additionalImages = game?.images?.map(img => `/storage/${img.image_path}`) || [];
+// Extraer datos del juego y juegos relacionados de forma segura
+const game = gameData?.game || null;
+const relatedGames = gameData?.relatedGames || [];
 ---
 
-<MainLayout title={title}>
+<MainLayout title={game ? `${game.name}` : "Detalle del juego"}>
   <div class="container mx-auto px-4 py-8">
     {error ? (
-      <div class="bg-red-500 text-white p-4 rounded mb-4">
-        {error}
+      <div class="bg-red-500 text-white p-4 rounded">
+        <h2 class="text-xl font-bold mb-2">Error</h2>
+        <p>{error}</p>
       </div>
-    ) : (
+    ) : game ? (
       <>
-        <!-- Breadcrumbs navigation -->
-        <div class="breadcrumbs text-sm text-gray-400 mb-6">
-          <a href="/" class="hover:text-white">Inicio</a> &gt; 
-          <a href="/games" class="hover:text-white">Juegos</a> &gt; 
-          <a href={`/games/${consoleSlug}`} class="hover:text-white">{game.console.name}</a> &gt; 
-          <span class="text-white">{game.name}</span>
+        <div class="mb-4">
+          <a href={`/games/${consoleSlug}`} class="text-blue-400 hover:underline">
+            &larr; Volver a {consoleData?.name || "juegos"}
+          </a>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <!-- Columna izquierda: Imágenes -->
-          <div class="game-images">
-            <div class="main-image bg-gray-800 rounded-lg overflow-hidden mb-4">
-              <img 
-                src={mainImage} 
-                alt={game.name} 
-                class="w-full h-auto"
-                id="main-image"
-              />
-            </div>
-            
-            {additionalImages.length > 0 && (
-              <div class="thumbnail-grid grid grid-cols-4 gap-2">
-                <div class="thumbnail-item bg-gray-800 rounded cursor-pointer">
-                  <img 
-                    src={mainImage} 
-                    alt={`${game.name} - imagen principal`} 
-                    class="w-full h-auto thumbnail"
-                    data-image={mainImage}
-                  />
-                </div>
-                
-                {additionalImages.map(image => (
-                  <div class="thumbnail-item bg-gray-800 rounded cursor-pointer">
-                    <img 
-                      src={image} 
-                      alt={`${game.name} - imagen adicional`} 
-                      class="w-full h-auto thumbnail"
-                      data-image={image}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+        
+        <h1 class="text-3xl font-bold mb-6">{game.name}</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <div>
+            <img 
+              src={getBackendImageUrl(game.image)} alt={game.name} 
+              alt={game.name}
+              class="w-full rounded" 
+            />
+           
           </div>
-
-          <!-- Columna derecha: Información y compra -->
-          <div class="game-info">
-            <h1 class="text-3xl font-bold mb-2">{game.name}</h1>
-            <p class="text-gray-400 mb-4">{game.console.name}</p>
+          
+          <div>
+            <p class="text-xl mb-4">{game.price} €</p>
+            <p class="mb-6">{game.description || 'No hay descripción disponible.'}</p>
             
-            <div class="price-container mb-6">
-              {game.sale_price ? (
-                <>
-                  <span class="text-4xl font-bold">{game.sale_price.toFixed(2)} €</span>
-                  <span class="text-gray-400 line-through ml-2">{game.price.toFixed(2)} €</span>
-                </>
-              ) : (
-                <span class="text-4xl font-bold">{game.price.toFixed(2)} €</span>
-              )}
-            </div>
-            
-            <div class="availability mb-6">
-              <span class={`stock-status ${game.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {game.stock > 0 ? 'En stock' : 'Agotado'}
-              </span>
-              {game.stock > 0 && (
-                <span class="text-gray-400 ml-2">({game.stock} unidades disponibles)</span>
-              )}
-            </div>
-            
-            <div class="buttons-container mb-6">
-              <button 
-                id="add-to-cart-btn"
-                class="bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg w-full mb-3 transition-colors"
-                data-id={game.id}
-                data-name={game.name}
-                data-price={game.sale_price || game.price}
-                data-image={mainImage}
-                disabled={game.stock <= 0}
-              >
-                {game.stock > 0 ? 'Añadir al carrito' : 'Agotado'}
-              </button>
-              
-              <button 
-                id="add-to-wishlist-btn"
-                class="border border-gray-600 hover:border-gray-400 text-white py-2 px-6 rounded-lg w-full transition-colors"
-                data-id={game.id}
-              >
-                Añadir a la lista de deseos
-              </button>
-            </div>
-            
-            <!-- Descripción del producto -->
-            <div class="game-description mb-6">
-              <h2 class="text-xl font-bold mb-2">Descripción</h2>
-              <div class="description-content text-gray-300">
-                {game.description}
-              </div>
-            </div>
-            
-            <!-- Detalles técnicos -->
-            <div class="game-details">
-              <h2 class="text-xl font-bold mb-2">Detalles</h2>
-              <ul class="text-gray-300 space-y-2">
-                {game.manufacturer && (
-                  <li><strong>Fabricante:</strong> {game.manufacturer}</li>
-                )}
-                {game.release_year && (
-                  <li><strong>Año de lanzamiento:</strong> {game.release_year}</li>
-                )}
-                {game.categories && game.categories.length > 0 && (
-                  <li>
-                    <strong>Categorías:</strong> 
-                    {game.categories.map((cat, index) => (
-                      <>
-                        <a href={`/categories/${cat.slug}`} class="hover:text-white">
-                          {cat.name}
-                        </a>
-                        {index < game.categories.length - 1 ? ', ' : ''}
-                      </>
-                    ))}
-                  </li>
-                )}
-                {game.condition && (
-                  <li><strong>Estado:</strong> {game.condition}</li>
-                )}
-                {game.includes && (
-                  <li><strong>Incluye:</strong> {game.includes}</li>
-                )}
-              </ul>
-            </div>
+            <button 
+              class="bg-red-600 text-white py-2 px-4 rounded"
+              id="add-to-cart-btn"
+              data-id={game.id}
+              data-name={game.name}
+              data-price={game.sale_price || game.price}
+            >
+              Añadir al carrito
+            </button>
           </div>
         </div>
         
-        <!-- Sección de juegos relacionados -->
         {relatedGames.length > 0 && (
-          <div class="related-games mt-12">
-            <h2 class="text-2xl font-bold mb-6">Juegos relacionados</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {relatedGames.map(relatedGame => (
-                <a href={`/games/${relatedGame.console.slug}/${relatedGame.slug}`} class="related-game-item">
-                  <div class="bg-gray-800 rounded-lg overflow-hidden hover:transform hover:scale-105 transition-transform">
+          <div>
+            <h2 class="text-2xl font-bold mb-4">Juegos relacionados</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {relatedGames.map(relGame => (
+                <div class="bg-gray-800 rounded overflow-hidden">
+                  <a href={`/games/${consoleSlug}/${relGame.slug}`}>
                     <img 
-                      src={relatedGame.image ? `/storage/${relatedGame.image}` : '/placeholder.jpg'} 
-                      alt={relatedGame.name} 
-                      class="w-full h-auto"
+                      src= {getBackendImageUrl(relGame.image)} alt={relGame.image} 
+                      alt={relGame.name}
+                      class="w-full" 
                     />
-                    <div class="p-3">
-                      <h3 class="font-bold truncate">{relatedGame.name}</h3>
-                      <p class="text-gray-400 text-sm mb-2">{relatedGame.console.name}</p>
-                      <p class="font-bold">
-                        {relatedGame.sale_price ? (
-                          <>
-                            <span>{relatedGame.sale_price.toFixed(2)} €</span>
-                            <span class="text-sm text-gray-400 line-through ml-1">
-                              {relatedGame.price.toFixed(2)} €
-                            </span>
-                          </>
-                        ) : (
-                          <span>{relatedGame.price.toFixed(2)} €</span>
-                        )}
-                      </p>
+                    <div class="p-2">
+                      <h3 class="font-bold">{relGame.name}</h3>
+                      <p>{relGame.price} €</p>
                     </div>
-                  </div>
-                </a>
+                  </a>
+                </div>
               ))}
             </div>
           </div>
         )}
       </>
+    ) : (
+      <div class="text-center py-16">
+        <p class="text-xl">Cargando información del juego...</p>
+      </div>
     )}
   </div>
 </MainLayout>
 
 <script>
-  // Script para manejar la galería de imágenes
+  // Script para manejar el botón "Añadir al carrito"
   document.addEventListener('DOMContentLoaded', () => {
-    const mainImage = document.getElementById('main-image') as HTMLImageElement;
-    const thumbnails = document.querySelectorAll('.thumbnail');
-    
-    // Cambiar imagen principal al hacer clic en miniaturas
-    if (mainImage && thumbnails.length > 0) {
-      thumbnails.forEach(thumbnail => {
-        thumbnail.addEventListener('click', () => {
-          const imageUrl = thumbnail.getAttribute('data-image');
-          if (imageUrl) {
-            mainImage.src = imageUrl;
-            
-            // Resaltar la miniatura seleccionada
-            thumbnails.forEach(thumb => {
-              if (thumb.parentElement) {
-                thumb.parentElement.classList.remove('ring-2', 'ring-red-500');
-              }
-            });
-            if (thumbnail.parentElement) {
-              thumbnail.parentElement.classList.add('ring-2', 'ring-red-500');
-            }
-          }
-        });
-      });
-    }
-    
-    // Manejar el botón "Añadir al carrito"
     const addToCartButton = document.getElementById('add-to-cart-btn');
     if (addToCartButton) {
       addToCartButton.addEventListener('click', () => {
-        // Obtener datos del producto desde atributos de datos
         const id = addToCartButton.getAttribute('data-id');
         const name = addToCartButton.getAttribute('data-name');
         const price = parseFloat(addToCartButton.getAttribute('data-price') || '0');
-        const image = addToCartButton.getAttribute('data-image');
         
-        // Obtener el carrito actual del almacenamiento local o crear uno nuevo
+        // Ejemplo simple con localStorage
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        
-        // Verificar si el producto ya está en el carrito
         const existingItemIndex = cart.findIndex(item => item.id === id);
         
         if (existingItemIndex >= 0) {
-          // Incrementar la cantidad si el producto ya está en el carrito
           cart[existingItemIndex].quantity += 1;
         } else {
-          // Añadir nuevo producto al carrito
           cart.push({
             id,
             name,
             price,
-            image,
             quantity: 1
           });
         }
         
-        // Guardar carrito actualizado
         localStorage.setItem('cart', JSON.stringify(cart));
-        
-        // Mostrar mensaje de confirmación
         alert(`${name} ha sido añadido al carrito.`);
-      });
-    }
-    
-    // Manejar el botón "Añadir a la lista de deseos"
-    const wishlistButton = document.getElementById('add-to-wishlist-btn');
-    if (wishlistButton) {
-      wishlistButton.addEventListener('click', () => {
-        alert('Funcionalidad de lista de deseos próximamente.');
-        // Aquí implementarías la lógica para añadir a la lista de deseos
       });
     }
   });

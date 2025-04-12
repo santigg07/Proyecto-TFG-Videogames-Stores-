@@ -2,62 +2,47 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\ConsoleController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+// Rutas de API
 
+// Rutas para usuario autenticado
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
 
 // Rutas para consolas
-Route::get('/consoles', [App\Http\Controllers\Api\ConsoleController::class, 'index']);
-Route::get('/consoles/{slug}', [App\Http\Controllers\Api\ConsoleController::class, 'show']);
+Route::get('/consoles', [ConsoleController::class, 'index']);
+Route::get('/consoles/{slug}', [ConsoleController::class, 'show']);
 
 // Rutas para juegos
-Route::get('/games', [App\Http\Controllers\Api\GameController::class, 'index']);
-Route::get('/games/console/{consoleSlug}', [App\Http\Controllers\Api\GameController::class, 'getByConsole']);
-Route::get('/games/{slug}', [App\Http\Controllers\Api\GameController::class, 'show']);
+Route::get('/games', [GameController::class, 'index']);
+Route::get('/games/console/{consoleSlug}', [GameController::class, 'getByConsole']);
+Route::get('/games/{slug}', [GameController::class, 'show']);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Rutas protegidas que requieren autenticación
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+// En routes/web.php o routes/api.php
+Route::get('/test-image-path', function () {
+    $paths = [];
+    
+    // Listar directorios
+    $paths['storage_path'] = storage_path('app/public');
+    $paths['public_path'] = public_path('storage');
+    
+    // Verificar si el directorio existe
+    $paths['storage_exists'] = file_exists(storage_path('app/public'));
+    $paths['public_storage_exists'] = file_exists(public_path('storage'));
+    
+    // Listar archivos en games
+    $gamesPath = storage_path('app/public/games');
+    $paths['games_dir_exists'] = file_exists($gamesPath);
+    
+    if ($paths['games_dir_exists']) {
+        $paths['files_in_games'] = scandir($gamesPath);
+    }
+    
+    return response()->json($paths);
 });
-
-// Rutas públicas
-Route::prefix('games')->group(function () {
-    Route::get('/', function () {
-        return response()->json([
-            'data' => [
-                ['id' => 1, 'name' => 'Juego 1', 'price' => 59.99],
-                ['id' => 2, 'name' => 'Juego 2', 'price' => 49.99],
-            ]
-        ]);
-    });
+Route::get('/test-symlink', function () {
+    return response()->file(public_path('storage/games/super-mario-bros.jpg'));
 });
-*/

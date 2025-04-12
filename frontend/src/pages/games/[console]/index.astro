@@ -1,42 +1,48 @@
 ---
-// src/pages/games/[console]/index.astro
-// Indica a Astro que esta página debe renderizarse bajo demanda, no pre-renderizarse
-export const prerender = false;
+//
+// import "../../../styles/global.css";
 import MainLayout from '../../../layouts/MainLayout.astro';
 import ProductCard from '../../../components/products/ProductCard.astro';
 import { getGamesByConsole, getConsole } from '../../../utils/api';
+import { getBackendImageUrl } from '../../../utils/image-utils';
 import "../../../styles/global.css";
 
 // Obtener el parámetro de la URL
 const { console: consoleSlug } = Astro.params;
+console.log("Slug de consola recibido:", consoleSlug);
 
-// Obtener información de la consola
+// Obtener información de la consola y sus juegos
 let consoleData;
-let games: { id: number; name: string; image?: string; sale_price?: number; price: number; slug: string }[] = [];
+interface Game {
+  id: string;
+  name: string;
+  image?: string;
+  sale_price?: number;
+  price: number;
+  slug: string;
+}
+
+let games: Game[] = [];
 let error: string | null = null;
 
 try {
-  // Primero obtenemos la información de la consola
+  // Obtener información de la consola
   consoleData = await getConsole(consoleSlug);
+  console.log("Datos de consola recibidos:", consoleData);
   
-  // Luego obtenemos los juegos de esa consola
+  // Obtener juegos de esa consola
   const gamesData = await getGamesByConsole(consoleSlug);
-  games = gamesData.data || []; // Dependiendo de la estructura de la respuesta
+  console.log("Datos de juegos recibidos:", gamesData);
+  
+  // Ajusta según la estructura exacta de tu respuesta
+  games = gamesData.games?.data || gamesData.games || [];
 } catch (err) {
-  console.error("Error:", err);
+  console.error("Error detallado:", err);
   error = "No se pudo cargar la información. Por favor, inténtalo de nuevo más tarde.";
 }
-
-// Si no se encuentra la consola, redirigir a 404
-if (!consoleData && !error) {
-  return Astro.redirect('/404');
-}
-
-// Título de la página
-const title = consoleData ? `Juegos de ${consoleData.name} - Retro Time` : "Consola no encontrada - Retro Time";
 ---
 
-<MainLayout title={title}>
+<MainLayout title={consoleData ? `Juegos de ${consoleData.name} - Retro Time` : "Consola no encontrada - Retro Time"}>
   <div class="container mx-auto px-4 py-8">
     {error ? (
       <div class="bg-red-500 text-white p-4 rounded mb-4">
@@ -61,7 +67,7 @@ const title = consoleData ? `Juegos de ${consoleData.name} - Retro Time` : "Cons
                 id={game.id}
                 title={game.name}
                 console={consoleData.name}
-                imageUrl={game.image ? `/storage/${game.image}` : '/placeholder.jpg'}
+                imageUrl={getBackendImageUrl(game.image)}
                 price={game.sale_price || game.price}
                 slug={game.slug}
                 consoleSlug={consoleSlug}
