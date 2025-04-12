@@ -73,32 +73,34 @@ videogames-store/
 
 1. Clonar el repositorio:
 ```bash
-git clone https://github.com/tu-usuario/retrotime.git
-cd retrotime
-
-Iniciar los contenedores con Docker Compose:
-
+git clone https://github.com/santigg07/Proyecto-TFG-Videogames-Stores-.git
+cd Proyecto-TFG-Videogames-Stores
+```
+2. Iniciar los contenedores con Docker Compose:
+```bash
 bashdocker-compose up -d
-
-Instalar dependencias del frontend:
-
+```
+3. Instalar dependencias del frontend:
+```bash
 bashcd frontend
 npm install
-
-Instalar dependencias del backend:
-
+```
+4. Instalar dependencias del backend:
+```bash
 bashcd backend
 composer install
+```
+5. Configurar variables de entorno:
 
-Configurar variables de entorno:
-
-Copiar .env.example a .env en la carpeta backend
-Configurar las credenciales de la base de datos y de los servicios de pago
+-Copiar .env.example a .env en la carpeta backend
+-Configurar las credenciales de la base de datos y de los servicios de pago
 
 
-Ejecutar migraciones y seeders:
-
+6. Ejecutar migraciones y seeders:
+```bash
 bashdocker-compose exec backend php artisan migrate --seed
+```
+
 🖥️ Uso
 
 Frontend: http://localhost:4321
@@ -142,7 +144,9 @@ Lista de deseos
 
 🧪 Pruebas
 Para ejecutar las pruebas del backend:
+```bash
 bashdocker-compose exec backend php artisan test
+```
 📝 Licencia
 MIT
 📧 Contacto
