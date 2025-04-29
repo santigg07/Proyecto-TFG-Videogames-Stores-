@@ -1,0 +1,89 @@
+---
+// src/components/catalog/SortDropdown.astro
+interface Props {
+  sortBy: string;
+  sortOrder: string;
+  createUrl: (params: Record<string, any>) => string;
+}
+
+const { sortBy, sortOrder, createUrl } = Astro.props;
+
+// Definir opciones de ordenamiento
+const sortOptions = [
+  { value: 'created_at-desc', label: 'Más recientes' },
+  { value: 'created_at-asc', label: 'Más antiguos' },
+  { value: 'price-asc', label: 'Precio: de menor a mayor' },
+  { value: 'price-desc', label: 'Precio: de mayor a menor' },
+  { value: 'name-asc', label: 'Nombre: A-Z' },
+  { value: 'name-desc', label: 'Nombre: Z-A' },
+  // Si tienes un campo para popularidad o valoraciones
+  { value: 'popularity-desc', label: 'Más populares' }
+];
+
+// Obtener el valor actual
+const currentSortValue = `${sortBy}-${sortOrder}`;
+
+// Obtener la etiqueta del ordenamiento actual
+const currentSortLabel = sortOptions.find(option => option.value === currentSortValue)?.label || 'Ordenar por';
+---
+
+<div class="relative">
+  <button
+    id="sort-button"
+    class="bg-gray-800 hover:bg-gray-700 text-white rounded px-4 py-2 inline-flex items-center"
+    aria-haspopup="listbox"
+    aria-expanded="false"
+  >
+    <span>{currentSortLabel}</span>
+    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+    </svg>
+  </button>
+  
+  <div 
+    id="sort-dropdown"
+    class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 hidden z-10"
+    role="listbox"
+  >
+    <div class="py-1">
+      {sortOptions.map(option => (
+        <a
+          href={createUrl({ 
+            sort_by: option.value.split('-')[0], 
+            sort_order: option.value.split('-')[1],
+          })}
+          class={`block px-4 py-2 text-sm ${option.value === currentSortValue 
+            ? 'bg-gray-700 text-white' 
+            : 'text-gray-300 hover:bg-gray-700'}`}
+          role="option"
+          aria-selected={option.value === currentSortValue}
+        >
+          {option.label}
+        </a>
+      ))}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const sortButton = document.getElementById('sort-button');
+    const sortDropdown = document.getElementById('sort-dropdown');
+    
+    if (sortButton && sortDropdown) {
+      sortButton.addEventListener('click', () => {
+        const expanded = sortButton.getAttribute('aria-expanded') === 'true';
+        sortButton.setAttribute('aria-expanded', (!expanded).toString());
+        sortDropdown.classList.toggle('hidden');
+      });
+      
+      // Cerrar al hacer clic fuera
+      document.addEventListener('click', (e) => {
+        if (!sortButton.contains(e.target as Node) && !sortDropdown.contains(e.target as Node)) {
+          sortButton.setAttribute('aria-expanded', 'false');
+          sortDropdown.classList.add('hidden');
+        }
+      });
+    }
+  });
+</script>

@@ -1,0 +1,83 @@
+---
+// src/components/catalog/Pagination.astro
+interface Props {
+  currentPage: number;
+  totalPages: number;
+  createUrl: (page: number) => string;
+}
+
+const { currentPage, totalPages, createUrl } = Astro.props;
+
+// Determinar qué páginas mostrar (siempre mostrar un máximo de 7 números de página)
+let pages: (number | string)[] = [];
+
+if (totalPages <= 7) {
+  // Si hay 7 o menos páginas, mostrar todas
+  pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+} else {
+  // Siempre mostrar la primera y última página
+  // Y algunas páginas alrededor de la página actual
+  
+  // Caso 1: Página actual cerca del principio
+  if (currentPage <= 3) {
+    pages = [1, 2, 3, 4, 5, '...', totalPages];
+  } 
+  // Caso 2: Página actual cerca del final
+  else if (currentPage >= totalPages - 2) {
+    pages = [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+  } 
+  // Caso 3: Página actual en el medio
+  else {
+    pages = [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+  }
+}
+---
+
+<div class="flex justify-center">
+  <nav class="flex items-center">
+    <!-- Botón de Anterior -->
+    <a 
+      href={currentPage > 1 ? createUrl(currentPage - 1) : '#'} 
+      class={`px-3 py-2 mr-1 rounded ${currentPage <= 1 
+        ? 'text-gray-500 cursor-not-allowed' 
+        : 'text-gray-300 hover:bg-gray-700'}`}
+      aria-disabled={currentPage <= 1}
+    >
+      <span class="sr-only">Anterior</span>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+      </svg>
+    </a>
+    
+    <!-- Números de página -->
+    {pages.map((page) => 
+      page === '...' ? (
+        <span class="px-3 py-2 text-gray-500">...</span>
+      ) : (
+        <a 
+          href={page === currentPage ? '#' : createUrl(page as number)} 
+          class={`px-3 py-2 mx-1 rounded ${page === currentPage 
+            ? 'bg-red-600 text-white' 
+            : 'text-gray-300 hover:bg-gray-700'}`}
+          aria-current={page === currentPage ? 'page' : undefined}
+        >
+          {page}
+        </a>
+      )
+    )}
+    
+    <!-- Botón de Siguiente -->
+    <a 
+      href={currentPage < totalPages ? createUrl(currentPage + 1) : '#'} 
+      class={`px-3 py-2 ml-1 rounded ${currentPage >= totalPages 
+        ? 'text-gray-500 cursor-not-allowed' 
+        : 'text-gray-300 hover:bg-gray-700'}`}
+      aria-disabled={currentPage >= totalPages}
+    >
+      <span class="sr-only">Siguiente</span>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+      </svg>
+    </a>
+  </nav>
+</div>

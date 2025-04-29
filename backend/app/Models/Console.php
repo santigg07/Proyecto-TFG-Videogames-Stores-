@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Console extends Model {
     use HasFactory;
 
-    protected $filllable = [
+    protected $fillable = [
         'name',
         'slug',
         'manufacturer',

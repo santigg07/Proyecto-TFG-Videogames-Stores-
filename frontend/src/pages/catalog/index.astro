@@ -1,0 +1,452 @@
+---
+// src/pages/catalog/index.astro
+import MainLayout from '../../layouts/MainLayout.astro';
+import ProductCard from '../../components/products/ProductCard.astro';
+import FilterSidebar from '../../components/catalog/FilterSidebar.astro';
+import Pagination from '../../components/catalog/Pagination.astro';
+import SortDropdown from '../../components/catalog/SortDropdown.astro';
+import ViewToggle from '../../components/catalog/ViewToggle.astro';
+import PerPageSelector from '../../components/catalog/PerPageSelector.astro';
+import CategoryBanner from '../../components/catalog/CategoryBanner.astro';
+import { getCatalog, getConsoles, getCategories, getFilterData } from '../../utils/api';
+import { getBackendImageUrl } from '../../utils/image-utils';
+
+// Definimos interfaces para tipar correctamente
+interface Console {
+  id: number;
+  name: string;
+  slug: string;
+  manufacturer?: string;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+interface Game {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  price: number;
+  sale_price?: number | null;
+  stock: number;
+  image?: string | null;
+  console?: {
+    id: number;
+    name: string;
+    slug: string;
+  } | null;
+  condition?: string;
+}
+
+// Obtener parámetros de URL
+const { searchParams } = Astro.url;
+const page = parseInt(searchParams.get('page') || '1');
+const perPage = parseInt(searchParams.get('per_page') || '12');
+const consoleId = searchParams.get('console_id');
+const categoryId = searchParams.get('category_id');
+const minPrice = searchParams.get('min_price');
+const maxPrice = searchParams.get('max_price');
+const condition = searchParams.get('condition');
+const inStock = searchParams.has('in_stock') 
+  ? null  // Usamos null en lugar de true o false
+  : undefined;
+const releaseYear = searchParams.get('release_year');
+const sortBy = searchParams.get('sort_by') || 'created_at';
+const sortOrder = searchParams.get('sort_order') || 'desc';
+const search = searchParams.get('search');
+const viewMode = searchParams.get('view') || 'grid';
+
+// Variables para almacenar los datos
+let games: Game[] = [];
+let consoles: Console[] = [];
+let categories: Category[] = [];
+let filterData: { 
+  priceRange: { min: number; max: number }; 
+  conditions: string[]; 
+  releaseYears: number[] 
+} | null = null;
+let totalGames = 0;
+let totalPages = 0;
+let error: string | null = null;
+let showingFrom = 0;
+let showingTo = 0;
+
+try {
+  // Obtener datos para los filtros
+  [consoles, categories, filterData] = await Promise.all([
+    getConsoles() as Promise<Console[]>,
+    getCategories() as Promise<Category[]>,
+    getFilterData()
+  ]);
+  
+  // Obtener catálogo de juegos con los filtros aplicados
+  const catalogData = await getCatalog({
+    page,
+    perPage,
+    consoleId,
+    categoryId,
+    minPrice,
+    maxPrice,
+    condition,
+    inStock,
+    releaseYear,
+    sortBy,
+    sortOrder,
+    search
+  });
+  
+  games = catalogData.data as Game[];
+  totalGames = catalogData.total;
+  totalPages = catalogData.last_page;
+  
+  // Calcular rango de productos que se están mostrando
+  showingFrom = (page - 1) * perPage + 1;
+  showingTo = Math.min(showingFrom + perPage - 1, totalGames);
+} catch (err) {
+  console.error("Error al cargar el catálogo:", err);
+  error = "No se pudo cargar el catálogo. Por favor, inténtalo de nuevo más tarde.";
+}
+
+// Determinar el título de la página
+let pageTitle = "Catálogo de Videojuegos Retro";
+if (search) {
+  pageTitle = `Resultados para "${search}" - Catálogo`;
+} else if (consoleId) {
+  const selectedConsole = consoles.find(c => c.id.toString() === consoleId);
+  if (selectedConsole) {
+    pageTitle = `Juegos de ${selectedConsole.name} - Catálogo`;
+  }
+} else if (categoryId) {
+  const selectedCategory = categories.find(c => c.id.toString() === categoryId);
+  if (selectedCategory) {
+    pageTitle = `Juegos de ${selectedCategory.name} - Catálogo`;
+  }
+}
+
+// Crear URL base para la paginación y filtros (sin los parámetros de página)
+type UrlParams = {
+  [key: string]: string | number | boolean | undefined;
+  keepPage?: boolean;
+}
+
+const createUrl = (params: UrlParams = {}) => {
+  const url = new URL(Astro.request.url);
+  
+  // Eliminar parámetro page
+  if (!params.keepPage) {
+    url.searchParams.delete('page');
+  }
+  
+  // Actualizar parámetros con los nuevos valores
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === null || value === undefined || key === 'keepPage') {
+      url.searchParams.delete(key);
+    } else {
+      url.searchParams.set(key, value.toString());
+    }
+  });
+  
+  return url.toString();
+};
+
+
+---
+
+<MainLayout title={pageTitle}>
+  <main class="container mx-auto px-4 py-8">
+    <!-- Breadcrumbs -->
+    <nav class="text-sm mb-6">
+      <ol class="flex flex-wrap items-center space-x-2">
+        <li><a href="/" class="text-gray-400 hover:text-white">Inicio</a></li>
+        <li><span class="text-gray-500 mx-2">/</span></li>
+        {search ? (
+          <>
+            <li><a href="/catalog" class="text-gray-400 hover:text-white">Catálogo</a></li>
+            <li><span class="text-gray-500 mx-2">/</span></li>
+            <li><span class="text-white">Búsqueda: {search}</span></li>
+          </>
+        ) : (
+          <li><span class="text-white">Catálogo</span></li>
+        )}
+      </ol>
+    </nav>
+
+    <!-- Banner principal -->
+    <CategoryBanner 
+      title={pageTitle}
+      description="Explora nuestra colección de videojuegos retro de las consolas más emblemáticas"
+      imageUrl="/assets/images/banners/catalog-banner.jpg"
+    />
+    
+    <div class="flex flex-col md:flex-row gap-8 mt-8">
+      <!-- Sidebar de filtros (oculto en móvil por defecto) -->
+      <aside class="w-full md:w-64 lg:w-72 shrink-0 filter-sidebar">
+        <FilterSidebar 
+          consolesList={consoles}
+          categoriesList={categories}
+          filterData={filterData}
+          selectedFilters={{
+            consoleId,
+            categoryId,
+            minPrice,
+            maxPrice,
+            condition,
+            inStock,
+            releaseYear
+          }}
+          createUrl={createUrl}
+        />
+      </aside>
+      
+      <!-- Contenido principal -->
+      <div class="flex-1">
+        {error ? (
+          <div class="bg-red-500 text-white p-4 rounded mb-4">
+            <p>{error}</p>
+          </div>
+        ) : (
+          <>
+            <!-- Información y controles -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+              <div class="text-gray-300">
+                {totalGames > 0 ? (
+                  <p>Mostrando {showingFrom}-{showingTo} de {totalGames} productos</p>
+                ) : (
+                  <p>No se encontraron productos</p>
+                )}
+              </div>
+              
+              <div class="flex flex-wrap items-center gap-4">
+                <!-- Selector de ordenación -->
+                <SortDropdown 
+                  sortBy={sortBy} 
+                  sortOrder={sortOrder} 
+                  createUrl={createUrl} 
+                />
+                
+                <!-- Selector de vista (grid/list) -->
+                <ViewToggle 
+                  viewMode={viewMode} 
+                  createUrl={createUrl} 
+                />
+                
+                <!-- Selector de productos por página -->
+                <PerPageSelector 
+                  perPage={perPage} 
+                  createUrl={createUrl} 
+                />
+              </div>
+            </div>
+            
+            {games && games.length > 0 ? (
+              <>
+                <!-- Grid de productos -->
+                <div class={`grid gap-6 ${
+                  viewMode === 'grid' 
+                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                    : 'grid-cols-1'
+                }`}>
+                  {games.map(game => (
+                    <div class={viewMode === 'list' ? 'bg-gray-800 rounded-lg p-4' : ''}>
+                      {viewMode === 'grid' ? (
+                        <ProductCard
+                          id={game.id}
+                          title={game.name}
+                          console={game.console?.name || ''}
+                          consoleSlug={game.console?.slug || ''}
+                          imageUrl={getBackendImageUrl(game.image)} alt={game.name} 
+                          price={game.sale_price || game.price}
+                          originalPrice={game.sale_price ? game.price : null}
+                          slug={game.slug}
+                          inStock={game.stock > 0}
+                          condition={game.condition}
+                        />
+                      ) : (
+                        <div class="flex gap-4">
+                          <div class="w-40 h-40 bg-gray-900 flex-shrink-0 rounded overflow-hidden">
+                            <img 
+                              src={getBackendImageUrl(game.image)} alt={game.name} 
+                              alt={game.name}
+                              class="w-full h-full object-contain p-2"
+                            />
+                          </div>
+                          <div class="flex-1">
+                            <h3 class="text-xl font-bold text-white">
+                              <a href={`/games/${game.console?.slug || 'unknown'}/${game.slug}`} class="hover:text-red-500">
+                                {game.name}
+                              </a>
+                            </h3>
+                            <p class="text-gray-400 mt-1">{game.console?.name || ''}</p>
+                            <div class="mt-2">
+                              {game.condition && (
+                                <span class="inline-block bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded mr-2">
+                                  {game.condition}
+                                </span>
+                              )}
+                              {game.stock <= 0 && (
+                                <span class="inline-block bg-red-900 text-red-100 text-xs px-2 py-1 rounded">
+                                  Agotado
+                                </span>
+                              )}
+                              {game.stock > 0 && game.stock <= 3 && (
+                                <span class="inline-block bg-yellow-900 text-yellow-100 text-xs px-2 py-1 rounded">
+                                  ¡Últimas unidades!
+                                </span>
+                              )}
+                            </div>
+                            <p class="mt-3">{game.description?.substring(0, 120)}...</p>
+                            <div class="flex justify-between items-center mt-4">
+                              <div>
+                                {game.sale_price ? (
+                                  <div class="flex items-center">
+                                    <span class="text-xl font-bold text-white">{game.sale_price.toFixed(2)} €</span>
+                                    <span class="text-gray-400 line-through ml-2">{game.price.toFixed(2)} €</span>
+                                  </div>
+                                ) : (
+                                  <span class="text-xl font-bold text-white">{game.price.toFixed(2)} €</span>
+                                )}
+                              </div>
+                              <div class="flex space-x-2">
+                                <button 
+                                  class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm transition-colors"
+                                  data-id={game.id}
+                                  data-name={game.name}
+                                  data-price={game.sale_price || game.price}
+                                  disabled={game.stock <= 0}
+                                  aria-label={game.stock > 0 ? `Añadir ${game.name} al carrito` : `${game.name} agotado`}
+                                >
+                                  {game.stock > 0 ? 'Añadir al carrito' : 'Agotado'}
+                                </button>
+                                <button class="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded transition-colors">
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                <!-- Paginación -->
+                {totalPages > 1 && (
+                  <div class="mt-8">
+                    <Pagination 
+                      currentPage={page} 
+                      totalPages={totalPages} 
+                      createUrl={(p) => createUrl({ page: p, keepPage: true })} 
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div class="bg-gray-800 p-8 rounded text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z" />
+                </svg>
+                <h3 class="text-xl font-bold mb-2">No se encontraron productos</h3>
+                <p class="text-gray-400 mb-6">Prueba con otros filtros o términos de búsqueda.</p>
+                <a href="/catalog" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded transition-colors">
+                  Ver todos los juegos
+                </a>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  </main>
+</MainLayout>
+
+<script>
+// Script para manejar los botones de "Añadir al carrito"
+document.querySelectorAll('.bg-red-600[data-id]').forEach(button => {
+  button.addEventListener('click', (e) => {
+    if (button.hasAttribute('disabled')) return;
+    
+    const id = button.getAttribute('data-id');
+    const name = button.getAttribute('data-name');
+    const price = parseFloat(button.getAttribute('data-price') || '0');
+    
+    // Lógica para añadir al carrito
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const existingItemIndex = cart.findIndex(item => item.id === id);
+    
+    if (existingItemIndex >= 0) {
+      cart[existingItemIndex].quantity += 1;
+    } else {
+      cart.push({ id, name, price, quantity: 1 });
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    // Mostrar notificación
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-600 text-white py-2 px-4 rounded shadow-lg z-50 animate-fade-in';
+    notification.textContent = `¡${name} añadido al carrito!`;
+    document.body.appendChild(notification);
+    
+    // Eliminar notificación después de 3 segundos
+    setTimeout(() => {
+      notification.classList.add('animate-fade-out');
+      setTimeout(() => notification.remove(), 500);
+    }, 3000);
+  });
+});
+
+// Script para manejar el botón de filtro móvil
+document.addEventListener('DOMContentLoaded', () => {
+  const filterToggle = document.getElementById('filter-toggle');
+  const filterSidebar = document.querySelector('.filter-sidebar');
+  
+  if (filterToggle && filterSidebar) {
+    filterToggle.addEventListener('click', () => {
+      filterSidebar.classList.toggle('hidden');
+      filterSidebar.classList.toggle('fixed');
+      filterSidebar.classList.toggle('top-0');
+      filterSidebar.classList.toggle('left-0');
+      filterSidebar.classList.toggle('h-full');
+      filterSidebar.classList.toggle('z-50');
+      filterSidebar.classList.toggle('bg-gray-900');
+      
+      const isVisible = !filterSidebar.classList.contains('hidden');
+      filterToggle.textContent = isVisible ? 'Ocultar filtros' : 'Mostrar filtros';
+    });
+  }
+});
+</script>
+
+<style>
+/* Estilos para animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* Estilo para vista móvil */
+@media (max-width: 768px) {
+  .filter-sidebar {
+    @apply hidden;
+  }
+}
+</style>

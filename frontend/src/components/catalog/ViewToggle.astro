@@ -1,0 +1,37 @@
+---
+// src/components/catalog/ViewToggle.astro
+interface Props {
+  viewMode: string;
+  createUrl: (params: Record<string, any>) => string;
+}
+
+const { viewMode, createUrl } = Astro.props;
+---
+
+<div class="flex border border-gray-700 rounded overflow-hidden">
+  <a 
+    href={createUrl({ view: 'grid' })}
+    class={`px-3 py-2 ${viewMode === 'grid' 
+      ? 'bg-gray-700 text-white' 
+      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+    aria-label="Ver en cuadrícula"
+    title="Ver en cuadrícula"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg>
+  </a>
+  
+  <a 
+    href={createUrl({ view: 'list' })}
+    class={`px-3 py-2 ${viewMode === 'list' 
+      ? 'bg-gray-700 text-white' 
+      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+    aria-label="Ver en lista"
+    title="Ver en lista"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+    </svg>
+  </a>
+</div>
