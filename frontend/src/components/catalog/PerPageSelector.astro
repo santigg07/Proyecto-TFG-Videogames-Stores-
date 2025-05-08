@@ -34,17 +34,29 @@ const perPageOptions = [12, 24, 36, 48];
   </div>
 </div>
 
-<script define:vars={{ createUrl, perPageOptions }}>
+<script>
+  // Obtener la función createUrl desde un atributo data
   document.addEventListener('DOMContentLoaded', () => {
     const perPageSelect = document.getElementById('per-page-select');
     
     if (perPageSelect) {
       perPageSelect.addEventListener('change', (e) => {
-        const target = e.currentTarget;
+        const target = e.target;
         if (target instanceof HTMLSelectElement) {
-          const selectedIndex = target.selectedIndex;
-          const selectedPerPage = perPageOptions[selectedIndex];
-          window.location.href = createUrl({ per_page: selectedPerPage });
+          // Obtener el valor directamente del elemento select
+          const selectedPerPage = parseInt(target.value);
+          
+          // Crear URL manualmente (ya que no podemos pasar la función createUrl fácilmente)
+          const url = new URL(window.location.href);
+          url.searchParams.set('per_page', selectedPerPage.toString());
+          
+          // Si hay un parámetro de página, volver a la página 1
+          if (url.searchParams.has('page')) {
+            url.searchParams.set('page', '1');
+          }
+          
+          // Navegar a la nueva URL
+          window.location.href = url.toString();
         }
       });
     }

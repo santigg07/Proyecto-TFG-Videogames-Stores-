@@ -303,11 +303,11 @@ const createUrl = (params: UrlParams = {}) => {
                               <div>
                                 {game.sale_price ? (
                                   <div class="flex items-center">
-                                    <span class="text-xl font-bold text-white">{game.sale_price.toFixed(2)} €</span>
-                                    <span class="text-gray-400 line-through ml-2">{game.price.toFixed(2)} €</span>
+                                    <span class="text-xl font-bold text-white">{typeof game.sale_price === 'number' ? game.sale_price.toFixed(2) : game.sale_price} €</span>
+                                    <span class="text-gray-400 line-through ml-2">{typeof game.price === 'number' ? game.price.toFixed(2) : game.price} €</span>
                                   </div>
                                 ) : (
-                                  <span class="text-xl font-bold text-white">{game.price.toFixed(2)} €</span>
+                                <span class="text-xl font-bold text-white">{typeof game.price === 'number' ? game.price.toFixed(2) : game.price} €</span>
                                 )}
                               </div>
                               <div class="flex space-x-2">
