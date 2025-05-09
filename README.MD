@@ -34,6 +34,7 @@ El proyecto sigue un enfoque híbrido:
   - Carrito de compras, Proceso de pago, Búsqueda en vivo, Lista de deseos
 
 ## 📦 Estructura del Proyecto
+```
 videogames-store/
 │
 ├── frontend/                      # Proyecto Astro + React
@@ -59,6 +60,7 @@ videogames-store/
 │   └── ...
 │
 └── docker-compose.yml             # Configuración Docker
+```
 
 ## 🚀 Instalación y Configuración
 
@@ -71,79 +73,84 @@ videogames-store/
 
 1. Clonar el repositorio:
 ```bash
-git clone https://github.com/tu-usuario/retrotime.git
-cd retrotime
-
-Iniciar los contenedores con Docker Compose:
-
+git clone https://github.com/santigg07/Proyecto-TFG-Videogames-Stores-.git
+cd Proyecto-TFG-Videogames-Stores
+```
+2. Iniciar los contenedores con Docker Compose:
+```bash
 bashdocker-compose up -d
-
-Instalar dependencias del frontend:
-
+```
+3. Instalar dependencias del frontend:
+```bash
 bashcd frontend
 npm install
-
-Instalar dependencias del backend:
-
+```
+4. Instalar dependencias del backend:
+```bash
 bashcd backend
 composer install
+```
+5. Configurar variables de entorno:
 
-Configurar variables de entorno:
-
-Copiar .env.example a .env en la carpeta backend
-Configurar las credenciales de la base de datos y de los servicios de pago
+- Copiar .env.example a .env en la carpeta backend
+- Configurar las credenciales de la base de datos y de los servicios de pago
 
 
-Ejecutar migraciones y seeders:
-
+6. Ejecutar migraciones y seeders:
+```bash
 bashdocker-compose exec backend php artisan migrate --seed
+```
+
 🖥️ Uso
 
-Frontend: http://localhost:4321
-Backend API: http://localhost:8000/api
-PHPMyAdmin: http://localhost:8080
+- Frontend: http://localhost:4321
+- Backend API: http://localhost:8000/api
+- PHPMyAdmin: http://localhost:8080
 
 ✨ Características
 
-Catálogo de juegos por consola y categoría
-Detalles completos de productos
-Carrito de compras interactivo
-Procesamiento de pagos con Stripe y PayPal
-Panel de administración para gestión de productos
-Perfil de usuario con historial de compras
-Lista de deseos
-Reviews y comentarios
+- Catálogo de juegos por consola y categoría
+- Detalles completos de productos
+- Carrito de compras interactivo
+- Procesamiento de pagos con Stripe y PayPal
+- Panel de administración para gestión de productos
+- Perfil de usuario con historial de compras
+- Lista de deseos
+- Reviews y comentarios
 
 🔄 API RESTful
 El backend de Laravel expone una API RESTful para que el frontend consuma:
 
-Autenticación mediante Laravel Sanctum
-Endpoints para gestión de:
+- Autenticación mediante Laravel Sanctum
+- Endpoints para gestión de:
 
-Usuarios
-Productos
-Carrito
-Pagos
-Categorías y consolas
+- Usuarios
+- Productos
+- Carrito
+- Pagos
+- Categorías y consolas
 
 
 
 📊 Base de Datos
 El sistema incluye tablas para:
 
-Usuarios y roles
-Productos (juegos)
-Categorías y consolas
-Pedidos y elementos de pedido
-Integraciones con sistemas de pago
-Lista de deseos
+- Usuarios y roles
+- Productos (juegos)
+- Categorías y consolas
+- Pedidos y elementos de pedido
+- Integraciones con sistemas de pago
+- Lista de deseos
 
 🧪 Pruebas
 Para ejecutar las pruebas del backend:
+```bash
 bashdocker-compose exec backend php artisan test
+```
 📝 Licencia
 MIT
+
 📧 Contacto
 Para consultas o sugerencias sobre el proyecto, puedes contactar al autor a través de santi-91@alumnos.alborfp.com.
-
+#
 Desarrollado como Trabajo de Fin de Grado - 2025

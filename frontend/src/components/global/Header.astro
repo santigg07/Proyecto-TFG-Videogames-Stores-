@@ -37,6 +37,100 @@
   </div>
 </header>
 
+<!-- Añade esto al final de tu archivo Header.astro, dentro de un tag -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.querySelector('.search-bar input');
+    if (!searchInput) return;
+    
+    // Crear el contenedor de resultados
+    const resultsContainer = document.createElement('div');
+    resultsContainer.className = 'search-results';
+    resultsContainer.style.cssText = `
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border-radius: 0 0 4px 4px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      z-index: 10;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+    `;
+    searchInput.parentNode.style.position = 'relative';
+    searchInput.parentNode.appendChild(resultsContainer);
+    
+    // Función para buscar juegos
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      const query = searchInput.value.trim();
+      
+      if (query.length < 2) {
+        resultsContainer.style.display = 'none';
+        return;
+      }
+      
+      searchTimeout = setTimeout(async () => {
+        try {
+          // Aquí harías la llamada a tu API
+          // Por ahora usamos datos de ejemplo
+          const demoResults = [
+            { name: `${query} Bros`, console: 'Nintendo', slug: 'demo-game-1' },
+            { name: `Super ${query}`, console: 'SNES', slug: 'demo-game-2' },
+            { name: `${query} Adventure`, console: 'Nintendo 64', slug: 'demo-game-3' }
+          ];
+          
+          if (demoResults.length > 0) {
+            resultsContainer.innerHTML = demoResults.map(game => `
+              <a href="/games/${game.console.toLowerCase().replace(' ', '-')}/${game.slug}" 
+                  style="display: block; padding: 10px; border-bottom: 1px solid #eee; color: #333; text-decoration: none;">
+                <div style="font-weight: bold;">${game.name}</div>
+                <div style="font-size: 12px; color: #666;">${game.console}</div>
+              </a>
+            `).join('');
+            
+            resultsContainer.style.display = 'block';
+          } else {
+            resultsContainer.innerHTML = `
+              <div style="padding: 10px; color: #666;">No se encontraron resultados</div>
+            `;
+            resultsContainer.style.display = 'block';
+          }
+        } catch (error) {
+          console.error('Error searching:', error);
+        }
+      }, 300);
+    });
+    
+    // Cerrar al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+        resultsContainer.style.display = 'none';
+      }
+    });
+    
+    // Actualizar el contador del carrito
+    const cartCountElement = document.querySelector('.cart-count');
+    if (cartCountElement) {
+      const updateCartCount = () => {
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const itemCount = cart.reduce((total, item) => total + (item.quantity || 1), 0);
+        cartCountElement.textContent = itemCount.toString();
+      };
+      
+      updateCartCount();
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'cart') updateCartCount();
+      });
+      document.addEventListener('cartUpdated', updateCartCount);
+    }
+  });
+</script>
+
+
 <style>
   .header {
     background-color: #a32b26; /* Color de fondo del header, color que esta al principio:#a32b26 */
@@ -80,11 +174,13 @@
     border: none;
     border-radius: 4px;
     background-color: rgba(255, 255, 255, 0.9);
+    color: black;
   }
   
   .search-bar input:focus {
     outline: none;
     background-color: white;
+    
   }
   
   .search-bar button {

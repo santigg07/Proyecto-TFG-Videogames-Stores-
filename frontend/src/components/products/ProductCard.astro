@@ -1,9 +1,10 @@
 ---
 // src/components/products/ProductCard.astro
-const { id, title, console, consoleSlug, imageUrl, price, slug } = Astro.props;
+const { id, title, console, consoleSlug, imageUrl, price,originalPrice, slug } = Astro.props;
 
 // Formatear precio con dos decimales
 const formattedPrice = typeof price === 'number' ? price.toFixed(2) : price;
+const formattedOriginalPrice = typeof originalPrice === 'number' ? originalPrice.toFixed(2) : originalPrice;
 ---
 
 <div class="game-card bg-gray-800 rounded-lg overflow-hidden hover:transform hover:scale-105 transition-transform duration-300">
@@ -17,7 +18,14 @@ const formattedPrice = typeof price === 'number' ? price.toFixed(2) : price;
       <p class="game-console text-gray-400 text-sm">{console}</p>
       
       <div class="flex justify-between items-center mt-3">
-        <span class="game-price font-bold text-white">{formattedPrice} €</span>
+        {originalPrice ? (
+          <div class="flex items-center">
+            <span class="game-price font-bold text-white">{formattedPrice} €</span>
+            <span class="text-gray-400 line-through ml-2">{formattedOriginalPrice} €</span>
+          </div>
+        ) : (
+          <span class="game-price font-bold text-white">{formattedPrice} €</span>
+        )}
         <button 
           class="add-to-cart bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
           data-id={id}
@@ -56,3 +64,6 @@ const formattedPrice = typeof price === 'number' ? price.toFixed(2) : price;
     });
   });
 </script>
+
+
+

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\ConsoleController;
+use App\Http\Controllers\Api\CategoryController;
 
 // Rutas de API
 
@@ -16,9 +17,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('/consoles', [ConsoleController::class, 'index']);
 Route::get('/consoles/{slug}', [ConsoleController::class, 'show']);
 
+// Rutas para categorías
+Route::get('/categories', [CategoryController::class, 'index']);
+
 // Rutas para juegos
 Route::get('/games', [GameController::class, 'index']);
+Route::get('/games/search', [GameController::class, 'search']);
 Route::get('/games/console/{consoleSlug}', [GameController::class, 'getByConsole']);
+Route::get('/games/filter-data', [GameController::class, 'getFilterData']);  // Mover esta línea antes
 Route::get('/games/{slug}', [GameController::class, 'show']);
 
 // En routes/web.php o routes/api.php

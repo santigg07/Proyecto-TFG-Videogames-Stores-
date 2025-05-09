@@ -1,0 +1,64 @@
+---
+// src/components/catalog/PerPageSelector.astro
+interface Props {
+  perPage: number;
+  createUrl: (params: Record<string, any>) => string;
+}
+
+const { perPage, createUrl } = Astro.props;
+
+// Opciones de productos por página
+const perPageOptions = [12, 24, 36, 48];
+---
+
+<div class="relative">
+  <select
+    id="per-page-select"
+    class="appearance-none bg-gray-800 border border-gray-700 text-white py-2 pl-3 pr-8 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+    aria-label="Productos por página"
+  >
+    {perPageOptions.map(option => (
+      <option 
+        value={option} 
+        selected={perPage === option}
+      >
+        {option} por página
+      </option>
+    ))}
+  </select>
+  
+  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+    </svg>
+  </div>
+</div>
+
+<script>
+  // Obtener la función createUrl desde un atributo data
+  document.addEventListener('DOMContentLoaded', () => {
+    const perPageSelect = document.getElementById('per-page-select');
+    
+    if (perPageSelect) {
+      perPageSelect.addEventListener('change', (e) => {
+        const target = e.target;
+        if (target instanceof HTMLSelectElement) {
+          // Obtener el valor directamente del elemento select
+          const selectedPerPage = parseInt(target.value);
+          
+          // Crear URL manualmente (ya que no podemos pasar la función createUrl fácilmente)
+          const url = new URL(window.location.href);
+          url.searchParams.set('per_page', selectedPerPage.toString());
+          
+          // Si hay un parámetro de página, volver a la página 1
+          if (url.searchParams.has('page')) {
+            url.searchParams.set('page', '1');
+          }
+          
+          // Navegar a la nueva URL
+          window.location.href = url.toString();
+        }
+      });
+    }
+  });
+</script>
