@@ -7,13 +7,13 @@ export default function RegisterForm() {
     name: '',
     email: '',
     password: '',
-    passwordConfirmation: '',
-    termsAccepted: false
+    password_confirmation: '',
+    terms_accepted: false
   });
   
-  const [errors, setErrors] = useState({});
+  const [formErrors, setFormErrors] = useState({});
   const { register, isLoading, error } = useAuth();
-  
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -21,177 +21,180 @@ export default function RegisterForm() {
       [name]: type === 'checkbox' ? checked : value
     });
     
-    // Limpiar error específico cuando el usuario edita un campo
-    if (errors[name]) {
-      setErrors({
-        ...errors,
+    // Limpiar error del campo
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
         [name]: null
       });
     }
   };
-  
+
   const validate = () => {
-    const newErrors = {};
+    const errors = {};
     
     if (!formData.name.trim()) {
-      newErrors.name = 'El nombre es obligatorio';
+      errors.name = 'El nombre es obligatorio';
     }
     
     if (!formData.email.trim()) {
-      newErrors.email = 'El email es obligatorio';
+      errors.email = 'El email es obligatorio';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
+      errors.email = 'Email inválido';
     }
     
     if (!formData.password) {
-      newErrors.password = 'La contraseña es obligatoria';
+      errors.password = 'La contraseña es obligatoria';
     } else if (formData.password.length < 8) {
-      newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
+      errors.password = 'La contraseña debe tener al menos 8 caracteres';
     }
     
-    if (formData.password !== formData.passwordConfirmation) {
-      newErrors.passwordConfirmation = 'Las contraseñas no coinciden';
+    if (formData.password !== formData.password_confirmation) {
+      errors.password_confirmation = 'Las contraseñas no coinciden';
     }
     
-    if (!formData.termsAccepted) {
-      newErrors.termsAccepted = 'Debes aceptar los términos y condiciones';
+    if (!formData.terms_accepted) {
+      errors.terms_accepted = 'Debes aceptar los términos y condiciones';
     }
     
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validate()) return;
     
-    try {
-      await register(formData);
-      // El usuario será redirigido por el hook useAuth si el registro es exitoso
-    } catch (err) {
-      // Los errores de la API ya son manejados por el hook useAuth
+    const success = await register(formData);
+    
+    if (success) {
+      // Redirigir a la página principal o mostrar mensaje de éxito
+      window.location.href = '/';
     }
   };
-  
+
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Mostrar error global del hook */}
       {error && (
         <div className="bg-red-600 bg-opacity-20 border border-red-500 text-red-100 px-4 py-3 rounded">
           {error}
         </div>
       )}
       
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
-            Nombre completo
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            autoComplete="name"
-            value={formData.name}
-            onChange={handleChange}
-            className={`bg-gray-800 text-white px-4 py-2 rounded w-full focus:outline-none focus:ring-2 ${
-              errors.name ? 'border-red-500 focus:ring-red-500' : 'focus:ring-red-500'
-            }`}
-          />
-          {errors.name && (
-            <p className="mt-1 text-sm text-red-400">{errors.name}</p>
-          )}
-        </div>
-        
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={`bg-gray-800 text-white px-4 py-2 rounded w-full focus:outline-none focus:ring-2 ${
-              errors.email ? 'border-red-500 focus:ring-red-500' : 'focus:ring-red-500'
-            }`}
-          />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-400">{errors.email}</p>
-          )}
-        </div>
-        
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
-            Contraseña
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            value={formData.password}
-            onChange={handleChange}
-            className={`bg-gray-800 text-white px-4 py-2 rounded w-full focus:outline-none focus:ring-2 ${
-              errors.password ? 'border-red-500 focus:ring-red-500' : 'focus:ring-red-500'
-            }`}
-          />
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-400">{errors.password}</p>
-          )}
-        </div>
-        
-        <div>
-          <label htmlFor="passwordConfirmation" className="block text-sm font-medium text-gray-300 mb-1">
-            Confirmar contraseña
-          </label>
-          <input
-            id="passwordConfirmation"
-            name="passwordConfirmation"
-            type="password"
-            autoComplete="new-password"
-            value={formData.passwordConfirmation}
-            onChange={handleChange}
-            className={`bg-gray-800 text-white px-4 py-2 rounded w-full focus:outline-none focus:ring-2 ${
-              errors.passwordConfirmation ? 'border-red-500 focus:ring-red-500' : 'focus:ring-red-500'
-            }`}
-          />
-          {errors.passwordConfirmation && (
-            <p className="mt-1 text-sm text-red-400">{errors.passwordConfirmation}</p>
-          )}
-        </div>
-        
-        <div className="flex items-center">
-          <input
-            id="termsAccepted"
-            name="termsAccepted"
-            type="checkbox"
-            checked={formData.termsAccepted}
-            onChange={handleChange}
-            className={`h-4 w-4 bg-gray-800 border-gray-600 rounded text-red-600 focus:ring-red-500 ${
-              errors.termsAccepted ? 'border-red-500' : ''
-            }`}
-          />
-          <label htmlFor="termsAccepted" className="ml-2 block text-sm text-gray-300">
-            Acepto los términos y condiciones
-          </label>
-        </div>
-        {errors.termsAccepted && (
-          <p className="mt-1 text-sm text-red-400">{errors.termsAccepted}</p>
+      {/* Campo de nombre */}
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
+          Nombre completo
+        </label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          value={formData.name}
+          onChange={handleChange}
+          className={`bg-gray-800 text-white px-4 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500 ${
+            formErrors.name ? 'border border-red-500' : ''
+          }`}
+        />
+        {formErrors.name && (
+          <p className="mt-1 text-sm text-red-400">{formErrors.name}</p>
         )}
       </div>
       
+      {/* Campo de email */}
       <div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-70"
-        >
-          {isLoading ? 'Procesando...' : 'Crear cuenta'}
-        </button>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+          Email
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          className={`bg-gray-800 text-white px-4 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500 ${
+            formErrors.email ? 'border border-red-500' : ''
+          }`}
+        />
+        {formErrors.email && (
+          <p className="mt-1 text-sm text-red-400">{formErrors.email}</p>
+        )}
       </div>
+      
+      {/* Campo de contraseña */}
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
+          Contraseña
+        </label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={handleChange}
+          className={`bg-gray-800 text-white px-4 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500 ${
+            formErrors.password ? 'border border-red-500' : ''
+          }`}
+        />
+        {formErrors.password ? (
+          <p className="mt-1 text-sm text-red-400">{formErrors.password}</p>
+        ) : (
+          <p className="mt-1 text-xs text-gray-400">
+            La contraseña debe tener al menos 8 caracteres
+          </p>
+        )}
+      </div>
+      
+      {/* Campo de confirmación de contraseña */}
+      <div>
+        <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-300 mb-1">
+          Confirmar contraseña
+        </label>
+        <input
+          id="password_confirmation"
+          name="password_confirmation"
+          type="password"
+          value={formData.password_confirmation}
+          onChange={handleChange}
+          className={`bg-gray-800 text-white px-4 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500 ${
+            formErrors.password_confirmation ? 'border border-red-500' : ''
+          }`}
+        />
+        {formErrors.password_confirmation && (
+          <p className="mt-1 text-sm text-red-400">{formErrors.password_confirmation}</p>
+        )}
+      </div>
+      
+      {/* Aceptación de términos */}
+      <div className="flex items-start">
+        <input
+          id="terms_accepted"
+          name="terms_accepted"
+          type="checkbox"
+          checked={formData.terms_accepted}
+          onChange={handleChange}
+          className={`h-4 w-4 mt-1 bg-gray-800 border-gray-600 focus:ring-red-500 ${
+            formErrors.terms_accepted ? 'border-red-500' : ''
+          }`}
+        />
+        <label htmlFor="terms_accepted" className="ml-2 block text-sm text-gray-300">
+          Acepto los <a href="/terms" className="text-red-400 hover:text-red-300">Términos y Condiciones</a> y la <a href="/privacy" className="text-red-400 hover:text-red-300">Política de Privacidad</a>
+        </label>
+      </div>
+      {formErrors.terms_accepted && (
+        <p className="mt-1 text-sm text-red-400">{formErrors.terms_accepted}</p>
+      )}
+      
+      {/* Botón de envío */}
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-md transition-colors disabled:opacity-70"
+      >
+        {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
+      </button>
     </form>
   );
 }

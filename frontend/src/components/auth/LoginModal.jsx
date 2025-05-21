@@ -1,73 +1,67 @@
 // src/components/auth/LoginModal.jsx
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function LoginModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  
+  const { login, isLoading, error, isAuthenticated } = useAuth();
+
+  // Cerrar el modal si el usuario ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      setIsOpen(false);
+    }
+  }, [isAuthenticated]);
 
   // Escuchar eventos para abrir/cerrar el modal
   useEffect(() => {
     function handleToggleModal() {
       setIsOpen(prevState => !prevState);
-      
-      // Importante: manejar el overflow del body para evitar el scroll
-      if (!isOpen) {
-        document.body.style.overflow = "visible"; // Permitir scroll en el fondo
-      } else {
-        document.body.style.overflow = "visible"; // Permitir scroll en el fondo
-      }
-      
-      if (!isOpen) setError(null);
     }
 
     document.addEventListener('toggle-login-modal', handleToggleModal);
-    document.addEventListener('open-login-modal', () => {
-      setIsOpen(true);
-      document.body.style.overflow = "visible"; // Permitir scroll en el fondo
-    });
+    document.addEventListener('open-login-modal', () => setIsOpen(true));
     
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('open-login') === 'true') {
       setIsOpen(true);
-      document.body.style.overflow = "visible"; // Permitir scroll en el fondo
     }
 
     return () => {
       document.removeEventListener('toggle-login-modal', handleToggleModal);
       document.removeEventListener('open-login-modal', () => setIsOpen(true));
-      document.body.style.overflow = "visible"; // Restaurar al desmontar
     };
-  }, [isOpen]);
+  }, []);
 
   // Cerrar modal al hacer clic fuera
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       setIsOpen(false);
-      document.body.style.overflow = "visible"; // Restaurar al cerrar
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Simulación de autenticación
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      localStorage.setItem('user', JSON.stringify({ email }));
-      window.location.reload();
-    } catch (err) {
-      setError('Error al iniciar sesión. Verifica tus credenciales.');
-    } finally {
-      setIsLoading(false);
+    
+    // Intenta hacer login
+    const user = await login(email, password);
+    
+    // Si el login fue exitoso (devolvió un usuario)
+    if (user) {
+      console.log("Login exitoso, cerrando modal...");
+      setIsOpen(false);
+      
+      // Si quieres que la página se refresque para mostrar los cambios
+      // window.location.reload();
+      
+      // O simplemente emitir un evento personalizado si no quieres recargar
+      document.dispatchEvent(new CustomEvent('login-success-ui-update'));
     }
   };
-
   // Si el modal no está abierto, no renderizar nada
   if (!isOpen) return null;
 
