@@ -7,11 +7,31 @@ export function useAuth() {
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Función para limpiar la autenticación
+  const clearAuth = () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_expires_at');
+    setUser(null);
+    setIsAuthenticated(false);
+    
+    // Disparar evento de cambio de estado
+    document.dispatchEvent(new CustomEvent('auth-state-changed', {
+      detail: { authenticated: false }
+    }));
+  };
+
   // Verificar el estado de autenticación al cargar
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) return;
+      const token = localStorage.getItem('auth_token');
+      const expiresAt = localStorage.getItem('auth_expires_at');
+      
+      // Si no hay token o ha expirado
+      if (!token || (expiresAt && new Date().getTime() > parseInt(expiresAt))) {
+        clearAuth();
+        return;
+      }
 
       try {
         const response = await fetch('http://localhost:8000/api/user', {
@@ -23,15 +43,20 @@ export function useAuth() {
 
         if (response.ok) {
           const userData = await response.json();
+          localStorage.setItem('auth_user', JSON.stringify(userData));
           setUser(userData);
           setIsAuthenticated(true);
+          
+          // Disparar evento de cambio de estado
+          document.dispatchEvent(new CustomEvent('auth-state-changed', {
+            detail: { authenticated: true, user: userData }
+          }));
         } else {
-          // Token inválido o expirado
-          localStorage.removeItem('token');
-          setIsAuthenticated(false);
+          clearAuth();
         }
       } catch (err) {
         console.error('Error checking auth state:', err);
+        clearAuth();
       }
     };
 
@@ -39,7 +64,6 @@ export function useAuth() {
   }, []);
 
   // Función de login
-  // Añade esto al inicio de tu función de login en useAuth.js para depurar
   const login = async (email, password) => {
     console.log("Iniciando login con:", { email, password: "***" });
     setIsLoading(true);
@@ -69,23 +93,31 @@ export function useAuth() {
         throw new Error(data.message || 'Error al iniciar sesión');
       }
 
-      // Guardar token y datos del usuario
+      // Guardar token y datos del usuario con nuevo formato
       console.log("Guardando token y datos de usuario...");
-      localStorage.setItem('token', data.token);
-      console.log("Token guardado en localStorage");
+      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('auth_user', JSON.stringify(data.user));
       
-      // IMPORTANTE: También guardar el usuario completo en localStorage
-      localStorage.setItem('user', JSON.stringify(data.user));
-      console.log("Usuario guardado en localStorage:", data.user);
+      // Establecer expiración en 8 horas
+      const expiresAt = new Date().getTime() + (8 * 60 * 60 * 1000);
+      localStorage.setItem('auth_expires_at', expiresAt.toString());
+      
+      console.log("Token y usuario guardados en localStorage");
       
       setUser(data.user);
       setIsAuthenticated(true);
       
-      // Disparar evento de login
-      console.log("Disparando evento user-logged-in");
+      // Disparar eventos
+      console.log("Disparando eventos de login exitoso");
       document.dispatchEvent(new CustomEvent('user-logged-in', { 
         detail: { user: data.user } 
       }));
+      
+      document.dispatchEvent(new CustomEvent('auth-state-changed', {
+        detail: { authenticated: true, user: data.user }
+      }));
+      
+      document.dispatchEvent(new CustomEvent('login-success'));
       
       return data.user;
     } catch (err) {
@@ -104,8 +136,6 @@ export function useAuth() {
     setError(null);
 
     try {
-      // Preparar datos para el backend
-      // El backend espera password_confirmation
       const registerData = {
         ...userData,
         password_confirmation: userData.password_confirmation || userData.passwordConfirmation
@@ -123,7 +153,6 @@ export function useAuth() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Si hay errores de validación
         if (data.errors) {
           const errorMessages = Object.values(data.errors).flat().join('. ');
           throw new Error(errorMessages);
@@ -132,9 +161,20 @@ export function useAuth() {
       }
 
       // Guardar token y datos del usuario
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('auth_user', JSON.stringify(data.user));
+      
+      const expiresAt = new Date().getTime() + (8 * 60 * 60 * 1000);
+      localStorage.setItem('auth_expires_at', expiresAt.toString());
+      
       setUser(data.user);
       setIsAuthenticated(true);
+      
+      // Disparar eventos
+      document.dispatchEvent(new CustomEvent('auth-state-changed', {
+        detail: { authenticated: true, user: data.user }
+      }));
+      
       return data.user;
     } catch (err) {
       setError(err.message);
@@ -149,7 +189,7 @@ export function useAuth() {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       if (token) {
         await fetch('http://localhost:8000/api/logout', {
           method: 'POST',
@@ -160,12 +200,10 @@ export function useAuth() {
         });
       }
       
-      // Limpiar datos de autenticación
-      localStorage.removeItem('token');
-      setUser(null);
-      setIsAuthenticated(false);
+      clearAuth();
     } catch (err) {
       console.error('Error durante logout:', err);
+      clearAuth(); // Limpiar datos localmente aunque falle la petición
     } finally {
       setIsLoading(false);
     }

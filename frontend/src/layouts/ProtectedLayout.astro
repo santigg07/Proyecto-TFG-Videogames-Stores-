@@ -1,0 +1,30 @@
+---
+// src/layouts/ProtectedLayout.astro - Versión simple sin verificaciones complejas
+import MainLayout from './MainLayout.astro';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<MainLayout title={title}>
+  <div id="protected-content">
+    <slot />
+  </div>
+</MainLayout>
+
+<script>
+// Verificación simple solo para casos edge (acceso directo por URL)
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('auth_token');
+  const user = localStorage.getItem('auth_user');
+  
+  if (!token || !user) {
+    // Redirigir solo si accedieron directamente por URL
+    const currentPath = window.location.pathname;
+    window.location.href = `/?open-login=true&redirect=${encodeURIComponent(currentPath)}`;
+  }
+});
+</script>

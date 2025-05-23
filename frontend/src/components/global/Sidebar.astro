@@ -1,140 +1,143 @@
 ---
 // Sidebar.astro
-
 import "../../styles/sidebar.css";
+import LogoutConfirmation from '../ui/LogoutConfirmation';
 ---
 
-<div id="sidebar" class="sidebar">
-  <div class="sidebar-header">
-    <div class="logo-container">
-      <div class="logo">
-        <img src="/assets/images/logo-icon.png" alt="Logo" onerror="this.src='/assets/images/fallback-icon.png'; this.onerror=null;">
+<div id="sidebar" class="sidebar fixed top-0 left-0 w-[260px] h-screen bg-[#151c28] text-white z-[1000] flex flex-col transition-transform duration-300 shadow-md">
+  <div class="sidebar-header flex items-center justify-between p-4 border-b border-[#2a344a]">
+    <div class="logo-container flex items-center">
+      <div class="logo w-[30px] h-[30px] mr-2.5 flex items-center justify-center">
+        <img src="/assets/images/logo-icon.png" alt="Logo" class="max-w-full max-h-full" onerror="this.src='/assets/images/fallback-icon.png'; this.onerror=null;">
       </div>
-      <div class="brand-name">Retro Time</div>
+      <div class="brand-name text-lg font-bold whitespace-nowrap">Retro Time</div>
     </div>
-    <button id="sidebar-toggle" class="sidebar-toggle">
+    <button id="sidebar-toggle" class="sidebar-toggle bg-transparent border-0 text-[#a0aec0] cursor-pointer text-sm p-1.5 flex items-center justify-center transition-colors hover:text-white">
       <i class="fas fa-chevron-left"></i>
     </button>
   </div>
 
-  <div class="sidebar-content">
-    <nav class="sidebar-nav">
-      <a href="/" class="nav-item">
-        <i class="fas fa-home"></i>
-        <span class="nav-text">Inicio</span>
+  <div class="sidebar-content flex-1 overflow-y-auto py-2.5">
+    <nav class="sidebar-nav mb-5">
+      <a href="/" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-home text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Inicio</span>
       </a>
-      <a href="/catalog" class="nav-item">
-        <i class="fas fa-gamepad"></i>
-        <span class="nav-text">Catálogo</span>
+      <a href="/catalog" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Catálogo</span>
       </a>
-      <a href="/cart" class="nav-item">
-        <i class="fas fa-shopping-cart"></i>
-        <span class="nav-text">Carrito</span>
+      <a href="/cart" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-shopping-cart text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Carrito</span>
       </a>
     </nav>
 
-    <div class="section-header">
+    <div class="section-header flex items-center justify-between px-4 py-2.5 text-[#64748b] text-xs font-bold uppercase tracking-wider border-t border-[#2a344a] cursor-pointer">
       <span>PLATAFORMAS</span>
-      <button class="toggle-section">
+      <button class="toggle-section bg-transparent border-0 text-[#64748b] cursor-pointer text-xs">
         <i class="fas fa-chevron-down"></i>
       </button>
     </div>
     
-    <div class="section-content">
+    <div class="section-content block overflow-hidden">
       <!-- Nintendo con submenu -->
-      <div class="submenu-container">
-        <div class="submenu-header nav-item">
-          <i class="fas fa-gamepad"></i>
-          <span class="nav-text">Nintendo</span>
-          <button class="toggle-submenu">
+      <div class="submenu-container relative">
+        <div class="submenu-header nav-item flex items-center justify-between px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white cursor-pointer">
+          <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap flex-1">Nintendo</span>
+          <button class="toggle-submenu bg-transparent border-0 text-[#a0aec0] cursor-pointer text-xs flex items-center justify-center transition-colors hover:text-white">
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
-        <div class="submenu-content">
-          <a href="/games/nintendo-nes" class="nav-item submenu-item">
-            <i class="fas fa-circle"></i>
-            <span class="nav-text">NES</span>
+        <div class="submenu-content pl-[15px] border-l border-[#2a344a] ml-[22px] hidden">
+          <a href="/games/nintendo-nes" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">NES</span>
           </a>
-          <a href="/games/super-nintendo" class="nav-item submenu-item">
-            <i class="fas fa-circle"></i>
-            <span class="nav-text">SNES</span>
+          <a href="/games/super-nintendo" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">SNES</span>
           </a>
-          <a href="/games/nintendo-64" class="nav-item submenu-item">
-            <i class="fas fa-circle"></i>
-            <span class="nav-text">Nintendo 64</span>
+          <a href="/games/nintendo-64" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">Nintendo 64</span>
           </a>
-          <a href="/games/nintendo-gamecube" class="nav-item submenu-item">
-            <i class="fas fa-circle"></i>
-            <span class="nav-text">GameCube</span>
+          <a href="/games/nintendo-gamecube" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">GameCube</span>
           </a>
         </div>
       </div>
       
       <!-- Otras plataformas -->
-      <a href="/games/playstation" class="nav-item">
-        <i class="fas fa-gamepad"></i>
-        <span class="nav-text">PlayStation</span>
+      <a href="/games/playstation" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">PlayStation</span>
       </a>
-      <a href="/games/xbox" class="nav-item">
-        <i class="fas fa-gamepad"></i>
-        <span class="nav-text">Xbox</span>
+      <a href="/games/xbox" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Xbox</span>
       </a>
-      <a href="/games/sega-genesis" class="nav-item">
-        <i class="fas fa-gamepad"></i>
-        <span class="nav-text">Sega</span>
+      <a href="/games/sega-genesis" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Sega</span>
       </a>
     </div>
 
-    <div class="section-header">
+    <div class="section-header flex items-center justify-between px-4 py-2.5 text-[#64748b] text-xs font-bold uppercase tracking-wider border-t border-[#2a344a] cursor-pointer">
       <span>MI CUENTA</span>
-      <button class="toggle-section">
+      <button class="toggle-section bg-transparent border-0 text-[#64748b] cursor-pointer text-xs">
         <i class="fas fa-chevron-down"></i>
       </button>
     </div>
-    <div class="section-content">
-      <a href="/profile" class="nav-item">
-        <i class="fas fa-user"></i>
-        <span class="nav-text">Perfil</span>
+    <div class="section-content block overflow-hidden">
+      <a href="/profile" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+        <i class="fas fa-user text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Perfil</span>
       </a>
-      <a href="/orders" class="nav-item">
-        <i class="fas fa-shopping-bag"></i>
-        <span class="nav-text">Mis pedidos</span>
+      <a href="/profile/orders" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+        <i class="fas fa-shopping-bag text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Mis pedidos</span>
       </a>
-      <a href="profile/wishlist" class="nav-item">
-        <i class="fas fa-heart"></i>
-        <span class="nav-text">Lista de deseos</span>
+      <a href="/profile/wishlist" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+        <i class="fas fa-heart text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Lista de deseos</span>
       </a>
-      <a href="/settings" class="nav-item">
-        <i class="fas fa-cog"></i>
-        <span class="nav-text">Configuración</span>
+      <a href="/profile/settings" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+        <i class="fas fa-cog text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Configuración</span>
       </a>
       <!-- Añadir este botón de logout -->
-      <a href="#" id="logout-button" class="nav-item">
-        <i class="fas fa-sign-out-alt"></i>
-        <span class="nav-text">Cerrar sesión</span>
+      <a href="#" id="logout-button" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-sign-out-alt text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Cerrar sesión</span>
       </a>
     </div>
   </div>
 
-  <div class="sidebar-footer">
-    <div class="user-profile">
-      <div class="avatar">
-        <img src="/assets/images/avatar-placeholder.png" alt="Avatar" onerror="this.src='/assets/images/fallback-avatar.png'; this.onerror=null;">
+  <div class="sidebar-footer p-4 border-t border-[#2a344a]">
+    <div class="user-profile flex items-center">
+      <div class="avatar w-9 h-9 rounded-full overflow-hidden mr-2.5">
+        <img src="/assets/images/avatar-placeholder.png" alt="Avatar" class="w-full h-full object-cover" onerror="this.src='/assets/images/fallback-avatar.png'; this.onerror=null;">
       </div>
-      <div class="user-info">
-        <div id="sidebar-username" class="username">Usuario</div>
-        <div id="sidebar-email" class="email">usuario@example.com</div>
+      <div class="user-info flex-1 min-w-0">
+        <div id="sidebar-username" class="username font-bold text-sm whitespace-nowrap overflow-hidden text-ellipsis"></div>
+        <div id="sidebar-email" class="email text-xs text-[#a0aec0] whitespace-nowrap overflow-hidden text-ellipsis"></div>
       </div>
-      <button class="settings-button">
+      <button class="settings-button bg-transparent border-0 text-[#a0aec0] cursor-pointer text-base ml-2.5">
         <i class="fas fa-cog"></i>
       </button>
     </div>
   </div>
+    <!-- Área donde se mostrará el modal de confirmación -->
+  <div id="logout-confirmation-container"></div>
 </div>
 
-<div id="sidebar-overlay" class="sidebar-overlay"></div>
+<div id="sidebar-overlay" class="sidebar-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-[999] hidden"></div>
 
-
+<!-- Componente React para el modal -->
+<LogoutConfirmation client:load />
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -252,7 +255,7 @@ import "../../styles/sidebar.css";
       mobileMenuButton.addEventListener('click', () => {
         sidebar.classList.add('mobile-open');
         sidebar.classList.remove('collapsed'); // Ensure sidebar is expanded when opened on mobile
-        sidebarOverlay.classList.add('active');
+        sidebarOverlay.classList.remove('hidden');
       });
     }
 
@@ -260,7 +263,7 @@ import "../../styles/sidebar.css";
     if (sidebarOverlay) {
       sidebarOverlay.addEventListener('click', () => {
         sidebar.classList.remove('mobile-open');
-        sidebarOverlay.classList.remove('active');
+        sidebarOverlay.classList.add('hidden');
       });
     }
 
@@ -269,123 +272,221 @@ import "../../styles/sidebar.css";
       if (window.innerWidth > 768) {
         if (sidebarOverlay) {
           sidebarOverlay.classList.remove('active');
+          sidebarOverlay.classList.add('hidden');
         }
         sidebar.classList.remove('mobile-open');
+      } else {
+        // Si estamos en móvil y no está abierto, ocultarlo
+        if (!sidebar.classList.contains('mobile-open')) {
+          sidebar.classList.add('-translate-x-full');
+        }
       }
     });
-  });
+    
+    // Inicializar el estado del sidebar en móvil
+    if (window.innerWidth <= 768) {
+      sidebar.classList.add('-translate-x-full');
+    }
 
-  // Añadir funcionalidad para actualizar la información del usuario
-  document.addEventListener('DOMContentLoaded', () => {
+    // Añadir funcionalidad para actualizar la información del usuario
     // Función para actualizar la información del usuario en el sidebar
+    // ACTUALIZAR SOLO ESTA PARTE - Función para actualizar información del usuario
     function updateUserInfo() {
-      const userStr = localStorage.getItem('user');
+      // Usar los mismos nombres que useAuth.js
+      const userStr = localStorage.getItem('auth_user');
+      const token = localStorage.getItem('auth_token');
       
-      if (!userStr) {
-        // No hay usuario autenticado
-        return;
-      }
+      const usernameElement = document.getElementById('sidebar-username');
+      const emailElement = document.getElementById('sidebar-email');
       
-      try {
-        const user = JSON.parse(userStr);
-        
-        // Actualizar nombre y email en el sidebar
-        const usernameElement = document.getElementById('sidebar-username');
-        const emailElement = document.getElementById('sidebar-email');
-        
-        if (usernameElement && user.name) {
-          usernameElement.textContent = user.name;
+      if (userStr && token) {
+        try {
+          const user = JSON.parse(userStr);
+          
+          if (usernameElement && user.name) {
+            usernameElement.textContent = user.name;
+          }
+          
+          if (emailElement && user.email) {
+            emailElement.textContent = user.email;
+          }
+          
+          // Mostrar elementos para usuarios autenticados
+          document.querySelectorAll('.authenticated-only').forEach(el => {
+            el.style.display = 'block';
+          });
+          
+          document.querySelectorAll('.guest-only').forEach(el => {
+            el.style.display = 'none';
+          });
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          clearUserInfo();
         }
-        
-        if (emailElement && user.email) {
-          emailElement.textContent = user.email;
-        }
-        
-        // También puedes mostrar/ocultar elementos basados en el estado de autenticación
-        document.querySelectorAll('.authenticated-only').forEach(el => {
-          el.style.display = 'block';
-        });
-        
-        document.querySelectorAll('.guest-only').forEach(el => {
-          el.style.display = 'none';
-        });
-      } catch (error) {
-        console.error('Error parsing user data:', error);
+      } else {
+        clearUserInfo();
       }
     }
     
-    // Actualizar la información al cargar la página
+    function clearUserInfo() {
+      const usernameElement = document.getElementById('sidebar-username');
+      const emailElement = document.getElementById('sidebar-email');
+      
+      if (usernameElement) usernameElement.textContent = 'Invitado';
+      if (emailElement) emailElement.textContent = 'Inicia sesión';
+      
+      document.querySelectorAll('.authenticated-only').forEach(el => {
+        el.style.display = 'none';
+      });
+      
+      document.querySelectorAll('.guest-only').forEach(el => {
+        el.style.display = 'block';
+      });
+    }
+    
+    // Actualizar al cargar
     updateUserInfo();
     
-    // Escuchar eventos de inicio de sesión para actualizar la información
-    document.addEventListener('user-logged-in', (event) => {
+    // Escuchar eventos de autenticación - USAR LOS MISMOS NOMBRES QUE useAuth.js
+    document.addEventListener('auth-state-changed', (event) => {
+      console.log('Auth state changed:', event.detail);
       updateUserInfo();
     });
     
-    // Opcionalmente: verificar con el backend si el usuario está realmente autenticado
-    async function checkAuthStatus() {
-      try {
-        const response = await fetch('http://localhost:8000/api/user', {
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          credentials: 'include'
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          localStorage.setItem('user', JSON.stringify(data.user));
-          updateUserInfo();
-        } else {
-          // Si la petición falla, el usuario no está autenticado
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-        }
-      } catch (error) {
-        console.error('Error checking auth status:', error);
-      }
-    }
+    document.addEventListener('user-logged-in', (event) => {
+      console.log('User logged in:', event.detail);
+      updateUserInfo();
+    });
     
-    // Verificar estado de autenticación al cargar la página
-    checkAuthStatus();
-
-    // Añadir al script del sidebar, en el bloque DOMContentLoaded
+    // CORREGIR EL BOTÓN DE LOGOUT
+    // ACTUALIZAR SOLO EL BOTÓN DE LOGOUT
     const logoutButton = document.getElementById('logout-button');
     if (logoutButton) {
       logoutButton.addEventListener('click', async (e) => {
         e.preventDefault();
         
-        try {
-          const token = localStorage.getItem('token');
-          if (!token) return;
-          
-          // Llamar al endpoint de logout
-          const response = await fetch('http://localhost:8000/api/logout', {
+        // Emitir evento para mostrar el modal React
+        document.dispatchEvent(new CustomEvent('show-logout-confirmation'));
+      });
+    }
+
+    // Escuchar la confirmación del logout
+    document.addEventListener('logout-confirmed', async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        
+        if (token) {
+          // Hacer logout en el servidor
+          await fetch('http://localhost:8000/api/logout', {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
               'Authorization': `Bearer ${token}`
             }
           });
-          
-          // Limpiar localStorage
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-          
-          // Actualizar UI
-          const usernameElement = document.getElementById('sidebar-username');
-          const emailElement = document.getElementById('sidebar-email');
-          
-          if (usernameElement) usernameElement.textContent = 'Usuario';
-          if (emailElement) emailElement.textContent = 'usuario@example.com';
-          
-          // Opcional: recargar página
-          window.location.reload();
-        } catch (error) {
-          console.error('Error durante logout:', error);
         }
-      });
+
+        // Limpiar localStorage
+        localStorage.removeItem('auth_user');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_expires_at');
+
+        // Actualizar UI
+        clearUserInfo();
+
+        // Toast de despedida
+        document.dispatchEvent(new CustomEvent('show-toast', {
+          detail: {
+            title: '👋 ¡Hasta pronto!',
+            message: 'Has cerrado sesión correctamente.',
+            type: 'info',
+            duration: 2000
+          }
+        }));
+
+        // Emitir evento de logout
+        document.dispatchEvent(new CustomEvent('auth-state-changed', {
+          detail: { authenticated: false }
+        }));
+
+        // Redirigir sin recargar página
+        setTimeout(() => {
+          // Solo cambiar la URL si no estamos ya en la página principal
+          if (window.location.pathname !== '/') {
+            window.history.pushState({}, '', '/');
+            
+            // Recargar solo el contenido, no toda la página
+            window.dispatchEvent(new PopStateEvent('popstate'));
+          }
+        }, 1500);
+
+      } catch (error) {
+        console.error('Error durante logout:', error);
+        
+        // Toast de error
+        document.dispatchEvent(new CustomEvent('show-toast', {
+          detail: {
+            title: '❌ Error',
+            message: 'Hubo un problema al cerrar sesión.',
+            type: 'error',
+            duration: 3000
+          }
+        }));
+        
+        // Limpiar localStorage de todas formas
+        localStorage.clear();
+        clearUserInfo();
+      }
+    });
+
+    // ✅ NUEVO: Interceptar clics en enlaces protegidos
+    const protectedLinks = [
+      'a[href="/profile"]',
+      'a[href="/profile/orders"]', 
+      'a[href="/profile/wishlist"]',
+      'a[href="/profile/settings"]',
+      //'a[href*="/profile"]', // Cualquier enlace que contenga /profile
+      '.protected-link' // Clase para otros enlaces protegidos
+    ];
+
+    // Función para verificar autenticación
+    function isAuthenticated() {
+      const token = localStorage.getItem('auth_token');
+      const user = localStorage.getItem('auth_user');
+      return !!(token && user);
     }
+
+    // Función para mostrar toast y abrir modal de login
+    function requireAuth(targetUrl) {
+      document.dispatchEvent(new CustomEvent('show-toast', {
+        detail: {
+          title: '🔐 Acceso restringido',
+          message: 'Para acceder a esta sección necesitas iniciar sesión en tu cuenta.',
+          type: 'auth',
+          duration: 4000
+        }
+      }));
+
+      
+    }
+
+    // Añadir event listeners a todos los enlaces protegidos
+    protectedLinks.forEach(selector => {
+      document.querySelectorAll(selector).forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault(); // Prevenir navegación
+          
+          const targetUrl = link.getAttribute('href');
+          
+          if (!isAuthenticated()) {
+            requireAuth(targetUrl);
+          } else {
+            // Si está autenticado, navegar normalmente
+            window.location.href = targetUrl;
+          }
+        });
+      });
+    }); 
   });
 </script>
+
