@@ -187,3 +187,112 @@ export async function getBestSellingGames(limit = 4) {
     throw error;
   }
 }
+
+// NUEVAS FUNCIONES PARA LA LISTA DE DESEOS
+// Obtener lista de deseos del usuario
+export async function getWishlist() {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('No hay token de autenticación');
+    }
+
+    const response = await fetch(`${API_URL}/wishlist`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching wishlist:', error);
+    throw error;
+  }
+}
+
+// Añadir juego a la lista de deseos
+export async function addToWishlist(gameId) {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('No hay token de autenticación');
+    }
+
+    const response = await fetch(`${API_URL}/wishlist`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ game_id: gameId })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding to wishlist:', error);
+    throw error;
+  }
+}
+
+// Eliminar juego de la lista de deseos
+export async function removeFromWishlist(gameId) {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('No hay token de autenticación');
+    }
+
+    const response = await fetch(`${API_URL}/wishlist/${gameId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error removing from wishlist:', error);
+    throw error;
+  }
+}
+
+// Verificar si un juego está en la lista de deseos
+export async function checkWishlistStatus(gameId) {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      return { in_wishlist: false };
+    }
+
+    const response = await fetch(`${API_URL}/wishlist/check/${gameId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      return { in_wishlist: false };
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error checking wishlist status:', error);
+    return { in_wishlist: false };
+  }
+}

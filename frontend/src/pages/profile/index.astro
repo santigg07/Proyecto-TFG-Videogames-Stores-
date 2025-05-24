@@ -54,10 +54,21 @@ import ProfileForm from '../../components/profile/ProfileForm';
 
 <script>
   document.addEventListener('DOMContentLoaded', async () => {
+    const API_URL = 'http://localhost:8000/api';
+    const token = localStorage.getItem('auth_token');
+    
+    if (!token) {
+      console.error('No hay token de autenticación');
+      return;
+    }
+    
     try {
       // Cargar estadísticas del usuario
-      const statsResponse = await fetch('/api/user/stats', {
-        credentials: 'include'
+      const statsResponse = await fetch(`${API_URL}/user/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
       });
       
       if (statsResponse.ok) {
@@ -71,8 +82,11 @@ import ProfileForm from '../../components/profile/ProfileForm';
       }
 
       // Cargar actividad reciente
-      const activityResponse = await fetch('/api/user/recent-activity', {
-        credentials: 'include'
+      const activityResponse = await fetch(`${API_URL}/user/recent-activity`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
       });
       
       if (activityResponse.ok) {

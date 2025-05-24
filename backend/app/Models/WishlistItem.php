@@ -2,25 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class WishlistItem extends Model
 {
     use HasFactory;
 
-    /**
-     * Los atributos que son asignables masivamente.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'user_id',
-        'game_id',
+        'game_id'
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
     /**
-     * Obtener el usuario al que pertenece este ítem de la lista de deseos.
+     * Relación con el usuario
      */
     public function user()
     {
@@ -28,7 +28,7 @@ class WishlistItem extends Model
     }
 
     /**
-     * Obtener el juego de este ítem de la lista de deseos.
+     * Relación con el juego
      */
     public function game()
     {

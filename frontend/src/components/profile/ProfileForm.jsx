@@ -18,6 +18,9 @@ export default function ProfileForm() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // URL del backend
+  const API_URL = 'http://localhost:8000/api';
+
   useEffect(() => {
     loadUserData();
     
@@ -32,16 +35,29 @@ export default function ProfileForm() {
 
   const loadUserData = async () => {
     try {
-      const response = await fetch('/api/user/profile', {
-        credentials: 'include'
+      const token = localStorage.getItem('auth_token');
+      
+      if (!token) {
+        setError('No hay token de autenticación');
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/user/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
       });
       
       if (response.ok) {
         const data = await response.json();
         setUserData(data);
+      } else {
+        setError('Error al cargar los datos del usuario');
       }
     } catch (error) {
       console.error('Error loading user data:', error);
+      setError('Error de conexión al cargar los datos');
     }
   };
 
@@ -60,30 +76,56 @@ export default function ProfileForm() {
     setSuccess('');
 
     try {
-      const response = await fetch('/api/user/profile', {
+      const token = localStorage.getItem('auth_token');
+      
+      if (!token) {
+        setError('No hay token de autenticación');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('Enviando datos del perfil:', userData);
+
+      const response = await fetch(`${API_URL}/user/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        credentials: 'include',
         body: JSON.stringify(userData)
       });
+
+      console.log('Respuesta del servidor:', response.status);
 
       const result = await response.json();
 
       if (response.ok) {
         setSuccess('Perfil actualizado correctamente');
         setIsEditing(false);
+        
+        // Actualizar el usuario en localStorage
+        const currentUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+        const updatedUser = { ...currentUser, ...result.user };
+        localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+        
         // Actualizar el nombre en el sidebar
         const userNameElement = document.getElementById('user-name');
         if (userNameElement) {
           userNameElement.textContent = userData.name;
         }
+        
+        // Emitir evento para actualizar otros componentes
+        document.dispatchEvent(new CustomEvent('profile-updated', {
+          detail: updatedUser
+        }));
+        
       } else {
+        console.error('Error del servidor:', result);
         setError(result.message || 'Error al actualizar el perfil');
       }
     } catch (error) {
+      console.error('Error al actualizar perfil:', error);
       setError('Error de conexión. Inténtalo de nuevo.');
     } finally {
       setIsLoading(false);
@@ -103,6 +145,12 @@ export default function ProfileForm() {
         {success && (
           <div className="bg-green-600 bg-opacity-20 border border-green-500 text-green-100 px-4 py-3 rounded">
             {success}
+          </div>
+        )}
+        
+        {error && (
+          <div className="bg-red-600 bg-opacity-20 border border-red-500 text-red-100 px-4 py-3 rounded">
+            {error}
           </div>
         )}
         
@@ -149,6 +197,15 @@ export default function ProfileForm() {
             </label>
             <div className="bg-gray-700 text-white px-4 py-3 rounded-lg">
               {userData.address || 'No especificado'}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">
+              País
+            </label>
+            <div className="bg-gray-700 text-white px-4 py-3 rounded-lg">
+              {userData.country || 'No especificado'}
             </div>
           </div>
           
@@ -223,7 +280,7 @@ export default function ProfileForm() {
             type="tel"
             id="phone"
             name="phone"
-            value={userData.phone}
+            value={userData.phone || ''}
             onChange={handleInputChange}
             className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
             placeholder="+34 600 000 000"
@@ -238,7 +295,7 @@ export default function ProfileForm() {
             type="date"
             id="birth_date"
             name="birth_date"
-            value={userData.birth_date}
+            value={userData.birth_date || ''}
             onChange={handleInputChange}
             className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
           />
@@ -252,10 +309,25 @@ export default function ProfileForm() {
             type="text"
             id="address"
             name="address"
-            value={userData.address}
+            value={userData.address || ''}
             onChange={handleInputChange}
             className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
             placeholder="Calle, número, piso..."
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <label htmlFor="country" className="block text-gray-300 text-sm font-medium mb-2">
+            País
+          </label>
+          <input
+            type="text"
+            id="country"
+            name="country"
+            value={userData.country || ''}
+            onChange={handleInputChange}
+            className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
+            placeholder="Tu país"
           />
         </div>
         
@@ -267,7 +339,7 @@ export default function ProfileForm() {
             type="text"
             id="city"
             name="city"
-            value={userData.city}
+            value={userData.city || ''}
             onChange={handleInputChange}
             className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
             placeholder="Tu ciudad"
@@ -282,7 +354,7 @@ export default function ProfileForm() {
             type="text"
             id="postal_code"
             name="postal_code"
-            value={userData.postal_code}
+            value={userData.postal_code || ''}
             onChange={handleInputChange}
             className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
             placeholder="00000"

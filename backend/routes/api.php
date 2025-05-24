@@ -7,12 +7,14 @@ use App\Http\Controllers\Api\ConsoleController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\WishlistController;
 // Rutas de API
 
 // Rutas de autenticación (públicas)
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('password.email');
+
 
 // Rutas protegidas que requieren autenticación
 Route::middleware('auth:sanctum')->group(function () {
@@ -28,12 +30,22 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Pedidos del usuario
     Route::get('/user/orders', [UserController::class, 'orders']);
+
+
+    // Rutas para lista de deseos (requieren autenticación)
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/wishlist', [WishlistController::class, 'index']);
+        Route::post('/wishlist', [WishlistController::class, 'store']);
+        Route::delete('/wishlist/{gameId}', [WishlistController::class, 'destroy']);
+        Route::get('/wishlist/check/{gameId}', [WishlistController::class, 'check']);
+        Route::delete('/user/wishlist/clear', [WishlistController::class, 'clearAll']); // Para el botón limpiar lista
+    });
     
-    // Lista de deseos
+    /* Lista de deseos
     Route::get('/user/wishlist', [UserController::class, 'wishlist']);
     Route::post('/user/wishlist', [UserController::class, 'addToWishlist']);
     Route::delete('/user/wishlist/{gameId}', [UserController::class, 'removeFromWishlist']);
-    Route::delete('/user/wishlist/clear', [UserController::class, 'clearWishlist']);
+    Route::delete('/user/wishlist/clear', [UserController::class, 'clearWishlist']);*/
     
     // Configuración de seguridad
     Route::put('/user/password', [UserController::class, 'changePassword']);

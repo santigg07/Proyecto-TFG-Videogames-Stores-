@@ -41,11 +41,17 @@ import WishlistGrid from '../../components/profile/WishlistGrid';
       clearWishlistBtn.addEventListener('click', async () => {
         if (confirm('¿Estás seguro de que quieres eliminar todos los juegos de tu lista de deseos?')) {
           try {
-            const response = await fetch('/api/user/wishlist/clear', {
-              method: 'DELETE',
-              credentials: 'include'
-            });
+            const token = localStorage.getItem('auth_token');
             
+            const response = await fetch('http://localhost:8000/api/user/wishlist/clear', {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              }
+            });
+                     
             if (response.ok) {
               document.dispatchEvent(new CustomEvent('wishlistCleared'));
             }
