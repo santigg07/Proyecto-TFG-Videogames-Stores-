@@ -1,0 +1,316 @@
+---
+// src/pages/profile/settings.astro
+import ProtectedLayout from '../../layouts/ProtectedLayout.astro';
+import SettingsForm from '../../components/profile/SettingsForm';
+---
+
+<ProtectedLayout title="Configuración ">
+  <div class="space-y-6">
+    
+    <!-- Configuración de Cuenta -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-xl font-bold text-white mb-6">Configuración de Cuenta</h2>
+      <SettingsForm client:load />
+    </div>
+
+    <!-- Configuración de Notificaciones -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-xl font-bold text-white mb-6">Notificaciones</h2>
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-white font-medium">Ofertas y Promociones</h3>
+            <p class="text-gray-400 text-sm">Recibe notificaciones sobre ofertas especiales</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="notifications-offers" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+        
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-white font-medium">Nuevos Productos</h3>
+            <p class="text-gray-400 text-sm">Notificaciones sobre nuevos juegos añadidos</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="notifications-products">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-white font-medium">Estado de Pedidos</h3>
+            <p class="text-gray-400 text-sm">Actualizaciones sobre el estado de tus pedidos</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="notifications-orders" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+        
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-white font-medium">Newsletter</h3>
+            <p class="text-gray-400 text-sm">Recibe nuestro boletín semanal</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="notifications-newsletter">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Configuración de Privacidad -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-xl font-bold text-white mb-6">Privacidad</h2>
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-white font-medium">Perfil Público</h3>
+            <p class="text-gray-400 text-sm">Permitir que otros usuarios vean tu perfil</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="privacy-public-profile">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-white font-medium">Mostrar Lista de Deseos</h3>
+            <p class="text-gray-400 text-sm">Permitir que otros vean tu lista de deseos</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="privacy-wishlist">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-white font-medium">Historial de Compras</h3>
+            <p class="text-gray-400 text-sm">Mostrar tus compras recientes en tu perfil</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="privacy-purchase-history">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zona de Peligro -->
+    <div class="bg-red-900 bg-opacity-20 border border-red-600 rounded-lg p-6">
+      <h2 class="text-xl font-bold text-red-400 mb-6">Zona de Peligro</h2>
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-white font-medium">Exportar Datos</h3>
+            <p class="text-gray-400 text-sm">Descarga todos tus datos personales</p>
+          </div>
+          <button 
+            id="export-data-btn"
+            class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+          >
+            Exportar
+          </button>
+        </div>
+        
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-white font-medium">Eliminar Cuenta</h3>
+            <p class="text-gray-400 text-sm">Eliminar permanentemente tu cuenta y todos los datos</p>
+          </div>
+          <button 
+            id="delete-account-btn"
+            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ProtectedLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Cargar configuraciones guardadas
+    loadSettings();
+    
+    // Manejar cambios en switches
+    const switches = document.querySelectorAll('input[type="checkbox"]');
+    switches.forEach(switchElement => {
+      switchElement.addEventListener('change', saveSettings);
+    });
+    
+    // Exportar datos
+    const exportBtn = document.getElementById('export-data-btn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', exportData);
+    }
+    
+    // Eliminar cuenta
+    const deleteBtn = document.getElementById('delete-account-btn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', deleteAccount);
+    }
+  });
+
+  async function loadSettings() {
+    try {
+      const response = await fetch('/api/user/settings', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const settings = await response.json();
+        
+        // Aplicar configuraciones
+        Object.keys(settings).forEach(key => {
+          const element = document.getElementById(key);
+          if (element && element instanceof HTMLInputElement) {
+            element.checked = settings[key];
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
+  }
+
+  async function saveSettings() {
+    const settings = {};
+    const switches = document.querySelectorAll('input[type="checkbox"]');
+    
+    switches.forEach(switchElement => {
+      const input = switchElement as HTMLInputElement;
+      settings[input.id] = input.checked;
+    });
+    
+    try {
+      await fetch('/api/user/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(settings)
+      });
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    }
+  }
+
+  async function exportData() {
+    try {
+      const response = await fetch('/api/user/export', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'mis-datos-retro-time.json';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Error exporting data:', error);
+    }
+  }
+
+  async function deleteAccount() {
+    const confirmed = confirm(
+      '¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es irreversible y eliminará todos tus datos, pedidos e historial.'
+    );
+    
+    if (!confirmed) return;
+    
+    const doubleConfirmed = confirm(
+      'Por favor, confirma una vez más que quieres eliminar permanentemente tu cuenta.'
+    );
+    
+    if (!doubleConfirmed) return;
+    
+    try {
+      const response = await fetch('/api/user/delete', {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        alert('Tu cuenta ha sido eliminada. Serás redirigido a la página principal.');
+        window.location.href = '/';
+      } else {
+        alert('Hubo un error al eliminar tu cuenta. Por favor, contacta con soporte.');
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      alert('Hubo un error al eliminar tu cuenta. Por favor, contacta con soporte.');
+    }
+  }
+</script>
+
+<style>
+  /* Switch toggle styles */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #4a5568;
+    transition: .4s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+  }
+
+  input:checked + .slider {
+    background-color: #a32b26;
+  }
+
+  input:focus + .slider {
+    box-shadow: 0 0 1px #a32b26;
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(26px);
+  }
+
+  .slider.round {
+    border-radius: 34px;
+  }
+
+  .slider.round:before {
+    border-radius: 50%;
+  }
+</style>

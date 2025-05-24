@@ -1,0 +1,51 @@
+---
+// src/pages/profile/orders.astro
+import ProtectedLayout from '../../layouts/ProtectedLayout.astro';
+import OrdersList from '../../components/profile/OrdersList';
+---
+
+<ProtectedLayout title="Mis Pedidos ">
+  <div class="bg-gray-800 rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-white">Mis Pedidos</h1>
+      <div class="flex space-x-3">
+        <select id="status-filter" class="bg-gray-700 text-white px-4 py-2 rounded-lg">
+          <option value="">Todos los estados</option>
+          <option value="pending">Pendiente</option>
+          <option value="processing">Procesando</option>
+          <option value="completed">Completado</option>
+          <option value="cancelled">Cancelado</option>
+        </select>
+        <select id="sort-order" class="bg-gray-700 text-white px-4 py-2 rounded-lg">
+          <option value="desc">Más recientes</option>
+          <option value="asc">Más antiguos</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Lista de pedidos (React) -->
+    <OrdersList client:load />
+  </div>
+</ProtectedLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const statusFilter = document.getElementById('status-filter');
+    const sortOrder = document.getElementById('sort-order');
+
+    // Manejar cambios en filtros
+    [statusFilter, sortOrder].forEach(element => {
+      if (element) {
+        element.addEventListener('change', () => {
+          const event = new CustomEvent('ordersFilterChange', {
+            detail: {
+              status: statusFilter ? (statusFilter as HTMLSelectElement).value : '',
+              sort: sortOrder ? (sortOrder as HTMLSelectElement).value : ''
+            }
+          });
+          document.dispatchEvent(event);
+        });
+      }
+    });
+  });
+</script>

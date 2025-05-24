@@ -11,114 +11,157 @@ use Illuminate\Support\Facades\Auth;
 class WishlistController extends Controller
 {
     /**
-     * Mostrar la lista de deseos del usuario autenticado
-     *
-     * @return \Illuminate\Http\Response
+     * Obtener todos los elementos de la lista de deseos del usuario
      */
     public function index()
     {
-        $userId = Auth::id();
-        
-        $wishlistItems = WishlistItem::where('user_id', $userId)
-            ->with(['game.console'])
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'game_id' => $item->game_id,
-                    'name' => $item->game->name,
-                    'slug' => $item->game->slug,
-                    'console' => $item->game->console->name,
-                    'price' => $item->game->sale_price ?? $item->game->price,
-                    'regular_price' => $item->game->price,
-                    'image' => $item->game->image,
-                    'in_stock' => $item->game->stock > 0,
-                    'added_at' => $item->created_at
-                ];
-            });
-        
-        return response()->json($wishlistItems);
+        try {
+            $user = Auth::user();
+            
+            $wishlistItems = WishlistItem::with(['game.console'])
+                ->where('user_id', $user->id)
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $wishlistItems
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cargar la lista de deseos',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
-    
+
     /**
      * Añadir un juego a la lista de deseos
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function add(Request $request)
+    public function store(Request $request)
     {
-        $request->validate([
-            'game_id' => 'required|exists:games,id'
-        ]);
-        
-        $userId = Auth::id();
-        $gameId = $request->game_id;
-        
-        // Verificar si ya está en la lista de deseos
-        $existing = WishlistItem::where('user_id', $userId)
-            ->where('game_id', $gameId)
-            ->first();
-        
-        if ($existing) {
+        try {
+            $request->validate([
+                'game_id' => 'required|exists:games,id'
+            ]);
+            
+            $user = Auth::user();
+            
+            // Verificar si ya existe en la lista
+            $existingItem = WishlistItem::where('user_id', $user->id)
+                ->where('game_id', $request->game_id)
+                ->first();
+                
+            if ($existingItem) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El juego ya está en tu lista de deseos'
+                ], 409);
+            }
+            
+            $wishlistItem = WishlistItem::create([
+                'user_id' => $user->id,
+                'game_id' => $request->game_id
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Juego añadido a la lista de deseos',
+                'data' => $wishlistItem
+            ]);
+            
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Este juego ya está en tu lista de deseos'
-            ], 400);
+                'message' => 'Error al añadir a la lista de deseos',
+                'error' => $e->getMessage()
+            ], 500);
         }
-        
-        // Añadir a la lista de deseos
-        $wishlistItem = new WishlistItem();
-        $wishlistItem->user_id = $userId;
-        $wishlistItem->game_id = $gameId;
-        $wishlistItem->save();
-        
-        $game = Game::with('console')->find($gameId);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Juego añadido a la lista de deseos',
-            'item' => [
-                'id' => $wishlistItem->id,
-                'game_id' => $game->id,
-                'name' => $game->name,
-                'slug' => $game->slug,
-                'console' => $game->console->name,
-                'price' => $game->sale_price ?? $game->price,
-                'regular_price' => $game->price,
-                'image' => $game->image,
-                'in_stock' => $game->stock > 0,
-                'added_at' => $wishlistItem->created_at
-            ]
-        ]);
     }
-    
+
     /**
      * Eliminar un juego de la lista de deseos
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
-    public function remove($id)
+    public function destroy($gameId)
     {
-        $userId = Auth::id();
-        
-        $wishlistItem = WishlistItem::where('id', $id)
-            ->where('user_id', $userId)
-            ->first();
-        
-        if (!$wishlistItem) {
+        try {
+            $user = Auth::user();
+            
+            $wishlistItem = WishlistItem::where('user_id', $user->id)
+                ->where('game_id', $gameId)
+                ->first();
+                
+            if (!$wishlistItem) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El juego no está en tu lista de deseos'
+                ], 404);
+            }
+            
+            $wishlistItem->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Juego eliminado de la lista de deseos'
+            ]);
+            
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Este elemento no está en tu lista de deseos'
-            ], 404);
+                'message' => 'Error al eliminar de la lista de deseos',
+                'error' => $e->getMessage()
+            ], 500);
         }
-        
-        $wishlistItem->delete();
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Juego eliminado de la lista de deseos'
-        ]);
+    }
+
+    /**
+     * Verificar si un juego está en la lista de deseos
+     */
+    public function check($gameId)
+    {
+        try {
+            $user = Auth::user();
+            
+            $isInWishlist = WishlistItem::where('user_id', $user->id)
+                ->where('game_id', $gameId)
+                ->exists();
+            
+            return response()->json([
+                'success' => true,
+                'in_wishlist' => $isInWishlist
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al verificar la lista de deseos',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Limpiar toda la lista de deseos del usuario
+     */
+    public function clearAll()
+    {
+        try {
+            $user = Auth::user();
+            
+            $deletedCount = WishlistItem::where('user_id', $user->id)->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Se eliminaron {$deletedCount} juegos de tu lista de deseos"
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al limpiar la lista de deseos',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

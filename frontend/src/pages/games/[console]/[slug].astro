@@ -2,6 +2,7 @@
 // src/pages/games/[console]/[slug].astro
 import MainLayout from '../../../layouts/MainLayout.astro';
 import { getBackendImageUrl } from '../../../utils/image-utils';
+import WishlistButton from '../../../components/ui/WishlistButton';
 import "../../../styles/global.css";
 
 // Obtener parámetros de la URL
@@ -112,26 +113,37 @@ const relatedGames = gameData?.relatedGames || [];
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div>
             <img 
-              src={getBackendImageUrl(game.image)} alt={game.name} 
+              src={getBackendImageUrl(game.image)} 
               alt={game.name}
               class="w-full rounded" 
             />
-           
           </div>
           
           <div>
             <p class="text-xl mb-4">{game.price} €</p>
             <p class="mb-6">{game.description || 'No hay descripción disponible.'}</p>
             
-            <button 
-              class="bg-red-600 text-white py-2 px-4 rounded"
-              id="add-to-cart-btn"
-              data-id={game.id}
-              data-name={game.name}
-              data-price={game.sale_price || game.price}
-            >
-              Añadir al carrito
-            </button>
+            <div class="flex gap-3 mb-4">
+              <button 
+                class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded flex-1"
+                id="add-to-cart-btn"
+                data-id={game.id}
+                data-name={game.name}
+                data-price={game.sale_price || game.price}
+              >
+                Añadir al carrito
+              </button>
+              
+              <!-- Botón de wishlist más grande con texto -->
+              <div class="flex items-center">
+                <WishlistButton 
+                  gameId={game.id} 
+                  size="lg" 
+                  showText={true} 
+                  client:load 
+                />
+              </div>
+            </div>
           </div>
         </div>
         
@@ -140,10 +152,15 @@ const relatedGames = gameData?.relatedGames || [];
             <h2 class="text-2xl font-bold mb-4">Juegos relacionados</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               {relatedGames.map(relGame => (
-                <div class="bg-gray-800 rounded overflow-hidden">
+                <div class="bg-gray-800 rounded overflow-hidden relative">
+                  <!-- Botón de wishlist en juegos relacionados -->
+                  <div class="absolute top-2 right-2 z-10">
+                    <WishlistButton gameId={relGame.id} size="sm" client:load />
+                  </div>
+                  
                   <a href={`/games/${consoleSlug}/${relGame.slug}`}>
                     <img 
-                      src= {getBackendImageUrl(relGame.image)} alt={relGame.image} 
+                      src={getBackendImageUrl(relGame.image)} 
                       alt={relGame.name}
                       class="w-full" 
                     />
@@ -166,6 +183,7 @@ const relatedGames = gameData?.relatedGames || [];
   </div>
 </MainLayout>
 
+<!-- El script del carrito permanece igual -->
 <script>
   // Script para manejar el botón "Añadir al carrito"
   document.addEventListener('DOMContentLoaded', () => {
@@ -176,7 +194,6 @@ const relatedGames = gameData?.relatedGames || [];
         const name = addToCartButton.getAttribute('data-name');
         const price = parseFloat(addToCartButton.getAttribute('data-price') || '0');
         
-        // Ejemplo simple con localStorage
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         const existingItemIndex = cart.findIndex(item => item.id === id);
         

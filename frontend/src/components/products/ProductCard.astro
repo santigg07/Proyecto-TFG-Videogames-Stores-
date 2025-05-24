@@ -1,13 +1,20 @@
 ---
 // src/components/products/ProductCard.astro
-const { id, title, console, consoleSlug, imageUrl, price,originalPrice, slug } = Astro.props;
+import WishlistButton from '../ui/WishlistButton';
+
+const { id, title, console, consoleSlug, imageUrl, price, originalPrice, slug } = Astro.props;
 
 // Formatear precio con dos decimales
 const formattedPrice = typeof price === 'number' ? price.toFixed(2) : price;
 const formattedOriginalPrice = typeof originalPrice === 'number' ? originalPrice.toFixed(2) : originalPrice;
 ---
 
-<div class="game-card bg-gray-800 rounded-lg overflow-hidden hover:transform hover:scale-105 transition-transform duration-300">
+<div class="game-card bg-gray-800 rounded-lg overflow-hidden hover:transform hover:scale-105 transition-transform duration-300 relative">
+  <!-- Botón de wishlist en la esquina superior derecha -->
+  <div class="absolute top-2 right-2 z-10">
+    <WishlistButton gameId={id} size="md" client:load />
+  </div>
+
   <a href={`/games/${consoleSlug}/${slug}`} class="block">
     <div class="game-image bg-gray-900 aspect-square flex items-center justify-center">
       <img src={imageUrl} alt={title} class="max-w-full max-h-full p-4 object-contain" />
@@ -40,16 +47,15 @@ const formattedOriginalPrice = typeof originalPrice === 'number' ? originalPrice
 </div>
 
 <script>
-  // Script para manejar el botón "Añadir" (opcional, si quieres que funcione directamente desde la tarjeta)
+  // Script para manejar el botón "Añadir" (el código permanece igual)
   document.querySelectorAll('.add-to-cart').forEach(button => {
     button.addEventListener('click', (e) => {
-      e.preventDefault(); // Evita navegar a la página de detalle al hacer clic en el botón
+      e.preventDefault();
       
       const id = button.getAttribute('data-id');
       const name = button.getAttribute('data-name');
       const price = parseFloat(button.getAttribute('data-price') || '0');
       
-      // Lógica para añadir al carrito (similar a la de la página de detalle)
       const cart = JSON.parse(localStorage.getItem('cart') || '[]');
       const existingItem = cart.find(item => item.id === id);
       
@@ -64,6 +70,3 @@ const formattedOriginalPrice = typeof originalPrice === 'number' ? originalPrice
     });
   });
 </script>
-
-
-

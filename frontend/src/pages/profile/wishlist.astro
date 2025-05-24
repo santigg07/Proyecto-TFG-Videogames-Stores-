@@ -1,0 +1,72 @@
+---
+// src/pages/profile/wishlist.astro
+import ProtectedLayout from '../../layouts/ProtectedLayout.astro';
+import WishlistGrid from '../../components/profile/WishlistGrid';
+---
+
+<ProtectedLayout title="Lista de Deseos ">
+  <div class="bg-gray-800 rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-white">Mi Lista de Deseos</h1>
+      <div class="flex space-x-3">
+        <button 
+          id="clear-wishlist-btn" 
+          class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+        >
+          <i class="fas fa-trash mr-2"></i>
+          Limpiar Lista
+        </button>
+        <button 
+          id="add-all-to-cart-btn" 
+          class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+        >
+          <i class="fas fa-shopping-cart mr-2"></i>
+          Añadir Todo al Carrito
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid de productos en lista de deseos (React) -->
+    <WishlistGrid client:load />
+  </div>
+</ProtectedLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const clearWishlistBtn = document.getElementById('clear-wishlist-btn');
+    const addAllToCartBtn = document.getElementById('add-all-to-cart-btn');
+
+    // Limpiar lista de deseos
+    if (clearWishlistBtn) {
+      clearWishlistBtn.addEventListener('click', async () => {
+        if (confirm('¿Estás seguro de que quieres eliminar todos los juegos de tu lista de deseos?')) {
+          try {
+            const token = localStorage.getItem('auth_token');
+            
+            const response = await fetch('http://localhost:8000/api/user/wishlist/clear', {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              }
+            });
+                     
+            if (response.ok) {
+              document.dispatchEvent(new CustomEvent('wishlistCleared'));
+            }
+          } catch (error) {
+            console.error('Error clearing wishlist:', error);
+          }
+        }
+      });
+    }
+
+    // Añadir todo al carrito
+    if (addAllToCartBtn) {
+      addAllToCartBtn.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('addAllToCart'));
+      });
+    }
+  });
+</script>

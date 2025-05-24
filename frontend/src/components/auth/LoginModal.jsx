@@ -6,140 +6,105 @@ export default function LoginModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  
-  const { login, isLoading, error, isAuthenticated } = useAuth();
+  const { login, isLoading, error } = useAuth();
 
-  // Cerrar el modal si el usuario ya está autenticado
-  useEffect(() => {
-    if (isAuthenticated) {
-      setIsOpen(false);
-    }
-  }, [isAuthenticated]);
-
-  // Escuchar eventos para abrir/cerrar el modal
   useEffect(() => {
     function handleToggleModal() {
-      setIsOpen(prevState => !prevState);
+      setIsOpen(prev => !prev);
     }
 
     document.addEventListener('toggle-login-modal', handleToggleModal);
-    document.addEventListener('open-login-modal', () => setIsOpen(true));
     
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('open-login') === 'true') {
-      setIsOpen(true);
-    }
-
     return () => {
       document.removeEventListener('toggle-login-modal', handleToggleModal);
-      document.removeEventListener('open-login-modal', () => setIsOpen(true));
     };
   }, []);
 
-  // Cerrar modal al hacer clic fuera
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const userData = await login(email, password);
+      
+      if (userData) {
+        // ✅ AQUÍ AÑADIMOS EL TOAST DE ÉXITO
+        document.dispatchEvent(new CustomEvent('show-toast', {
+          detail: {
+            title: `👋 ¡Bienvenido, ${userData.name}!`,
+            message: 'Has iniciado sesión correctamente.',
+            type: 'success',
+            duration: 3000
+          }
+        }));
+
+        // Cerrar modal
+        setIsOpen(false);
+        
+        // Limpiar formulario
+        setEmail('');
+        setPassword('');
+
+        // Redirigir si hay una URL pendiente (sin recargar página)
+        const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
+        if (redirectUrl) {
+          setTimeout(() => {
+            // Usar history.pushState en lugar de window.location.href
+            window.history.pushState({}, '', decodeURIComponent(redirectUrl));
+            
+            // Disparar evento personalizado para que el componente se actualice
+            window.dispatchEvent(new PopStateEvent('popstate'));
+          }, 1500);
+        }
+      }
+    } catch (err) {
+      // Toast de error ya se maneja en useAuth, pero podemos añadir uno específico
+      document.dispatchEvent(new CustomEvent('show-toast', {
+        detail: {
+          title: '❌ Error de inicio de sesión',
+          message: error || 'No se pudo iniciar sesión. Verifica tus credenciales.',
+          type: 'error',
+          duration: 4000
+        }
+      }));
+    }
+  };
+
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       setIsOpen(false);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Intenta hacer login
-    const user = await login(email, password);
-    
-    // Si el login fue exitoso (devolvió un usuario)
-    if (user) {
-      console.log("Login exitoso, cerrando modal...");
-      setIsOpen(false);
-      
-      // Si quieres que la página se refresque para mostrar los cambios
-      // window.location.reload();
-      
-      // O simplemente emitir un evento personalizado si no quieres recargar
-      document.dispatchEvent(new CustomEvent('login-success-ui-update'));
-    }
-  };
-  // Si el modal no está abierto, no renderizar nada
   if (!isOpen) return null;
 
-  // Estilo del modal como cadena para aplicarlo directamente como en el original
-  const modalStyles = {
-    modal: {
-      position: 'fixed',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      zIndex: 1000,
-      width: '90%',
-      maxWidth: '400px',
-      backgroundColor: '#131a2d',
-      border: '1px solid #222a45',
-      borderRadius: '8px',
-      padding: '24px',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
-    },
-    overlay: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 999,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      pointerEvents: 'all',
-    }
-  };
-
   return (
-    <>
-      {/* Overlay como un div separado con estilos inline */}
-      <div 
-        style={modalStyles.overlay} 
-        onClick={handleOverlayClick} 
-        aria-hidden="true"
-      />
-      
-      {/* Modal como un div separado con estilos inline */}
-      <div style={modalStyles.modal}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h2 style={{ color: 'white', fontSize: '20px', fontWeight: 'bold', margin: 0 }}>Iniciar sesión</h2>
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-auto"
+      onClick={handleOverlayClick}
+    >
+      {/* Modal sin fondo oscuro, con sombra más prominente */}
+      <div className="bg-[#131a2d] border-2 border-[#131a2d] rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl pointer-events-auto transform scale-105">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-white">Iniciar sesión</h2>
           <button 
-            onClick={() => {
-              setIsOpen(false);
-              document.body.style.overflow = "visible";
-            }}
-            style={{ background: 'none', border: 'none', color: '#999', fontSize: '24px', cursor: 'pointer' }}
-            aria-label="Cerrar"
+            onClick={() => setIsOpen(false)} 
+            className="text-gray-400 hover:text-white"
           >
-            ×
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
-        
+
         {error && (
-          <div style={{ 
-            backgroundColor: 'rgba(220, 38, 38, 0.2)', 
-            border: '1px solid #dc2626', 
-            color: '#fee2e2', 
-            padding: '8px 16px', 
-            borderRadius: '4px', 
-            marginBottom: '16px' 
-          }}>
+          <div className="bg-red-600 bg-opacity-20 border border-red-500 text-red-100 px-4 py-2 rounded mb-4">
             {error}
           </div>
         )}
-        
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label 
-              htmlFor="email" 
-              style={{ display: 'block', color: '#ccc', marginBottom: '6px', fontSize: '14px' }}
-            >
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
               Email
             </label>
             <input
@@ -147,23 +112,13 @@ export default function LoginModal() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={{ 
-                width: '100%', 
-                padding: '10px', 
-                backgroundColor: '#0a1020', 
-                border: '1px solid #222a45', 
-                borderRadius: '4px', 
-                color: 'white'
-              }}
+              className="bg-gray-800 text-white px-4 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
               required
             />
           </div>
-          
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label 
-              htmlFor="password" 
-              style={{ display: 'block', color: '#ccc', marginBottom: '6px', fontSize: '14px' }}
-            >
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
               Contraseña
             </label>
             <input
@@ -171,72 +126,48 @@ export default function LoginModal() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={{ 
-                width: '100%', 
-                padding: '10px', 
-                backgroundColor: '#0a1020', 
-                border: '1px solid #222a45', 
-                borderRadius: '4px', 
-                color: 'white'
-              }}
+              className="bg-gray-800 text-white px-4 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-red-500"
               required
             />
           </div>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <input
                 id="remember_me"
                 name="remember_me"
                 type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                style={{ marginRight: '6px' }}
+                className="h-4 w-4 bg-gray-800 border-gray-600 focus:ring-red-500"
               />
-              <label 
-                htmlFor="remember_me" 
-                style={{ color: '#ccc', fontSize: '14px' }}
-              >
+              <label htmlFor="remember_me" className="ml-2 block text-sm text-gray-300">
                 Recordarme
               </label>
             </div>
-            <a 
-              href="/forgot-password" 
-              style={{ color: '#a32b26', fontSize: '14px', textDecoration: 'none' }}
-            >
-              ¿Olvidaste tu contraseña?
-            </a>
+            <div className="text-sm">
+              <a href="/forgot-password" className="text-red-400 hover:text-red-300">
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
           </div>
-          
+
           <button
             type="submit"
             disabled={isLoading}
-            style={{
-              backgroundColor: '#a32b26',
-              color: 'white',
-              padding: '10px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              marginTop: '8px',
-              opacity: isLoading ? '0.7' : '1'
-            }}
+            className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition-colors disabled:opacity-70"
           >
             {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
-          
-          <div style={{ textAlign: 'center', marginTop: '8px', color: '#999', fontSize: '14px' }}>
-            ¿No tienes una cuenta? 
-            <a 
-              href="/register" 
-              style={{ color: '#a32b26', textDecoration: 'none', marginLeft: '4px' }}
-            >
-              Regístrate
-            </a>
+
+          <div className="text-center mt-4">
+            <p className="text-sm text-gray-400">
+              ¿No tienes cuenta?
+              <a href="/register" className="ml-1 text-red-400 hover:text-red-300 font-medium">
+                Regístrate ahora
+              </a>
+            </p>
           </div>
         </form>
       </div>
-    </>
+    </div>
   );
 }
