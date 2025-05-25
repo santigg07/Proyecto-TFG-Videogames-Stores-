@@ -1,0 +1,55 @@
+---
+// src/layouts/AdminLayout.astro
+import MainLayout from './MainLayout.astro';
+
+interface Props {
+    title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<MainLayout title={title} >
+    <!-- Contenido del panel de administración -->
+    <div class="admin-content ">
+        <slot />
+    </div>
+</MainLayout>
+
+<script>
+    // Verificar autenticación de administrador
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('auth_token');
+        const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
+        
+        if (!token || !user || user.role_id !== 1) {
+            // Mostrar mensaje de error específico para admin
+            alert('Se requieren privilegios de administrador para acceder a esta sección');
+            window.location.href = '/?open-login=true';
+            return;
+        }
+        
+        // Opcional: Agregar clase específica para estilos de admin
+        document.body.classList.add('admin-page');
+    });
+</script>
+
+<style>
+    
+    .admin-content {
+        padding: 20px;
+        background-color: #000000;
+        min-height: calc(100vh - 200px);
+    }
+    
+    /* Estilos específicos para páginas de admin */
+    :global(.admin-page) {
+        background-color: #f1f5f9;
+    }
+    
+    /* Destacar las secciones de admin en el sidebar */
+    :global(.admin-page .sidebar a[href*="/admin"]) {
+        background-color: rgba(163, 43, 38, 0.1);
+        border-left: 3px solid #a32b26;
+    }
+</style>

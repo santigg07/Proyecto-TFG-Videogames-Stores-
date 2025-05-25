@@ -1,4 +1,4 @@
-// src/components/ui/ConfirmationModal.jsx
+// src/components/ui/DeleteModal.jsx
 import React from 'react';
 
 export default function ConfirmationModal({
@@ -84,7 +84,7 @@ export default function ConfirmationModal({
       
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white border-2 border-[#a32b26] rounded-lg  shadow-xl max-w-md w-full transform transition-all">
+        <div className="relative bg-white border-2 border-[#a32b26] rounded-lg shadow-xl max-w-md w-full transform transition-all">
           <div className="p-6">
             {/* Icono y título */}
             <div className="flex items-center mb-4">
@@ -113,9 +113,7 @@ export default function ConfirmationModal({
                         src={item.image}
                         alt={item.name}
                         className="w-12 h-12 rounded object-cover"
-                        onError={(e) => {
-                          e.target.src = '/placeholder.jpg';
-                        }}
+                        
                       />
                     )}
                     <div className="flex-1">
@@ -143,16 +141,14 @@ export default function ConfirmationModal({
 
             {/* Botones */}
             <div className="flex flex-col-reverse sm:flex-row sm:space-x-3 space-y-3 space-y-reverse sm:space-y-0">
-              {cancelText && (
-                <button
-                  type="button"
-                  onClick={onClose}
-                  disabled={isLoading}
-                  className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {cancelText}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isLoading}
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {cancelText}
+              </button>
               <button
                 type="button"
                 onClick={onConfirm}
@@ -162,7 +158,7 @@ export default function ConfirmationModal({
                 {isLoading ? (
                   <div className="flex items-center justify-center">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    {type === 'warning' ? 'Procesando...' : 'Eliminando...'}
+                    Eliminando...
                   </div>
                 ) : (
                   confirmText

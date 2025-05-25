@@ -1,0 +1,11 @@
+---
+// src/pages/admin/games/index.astro
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import UsersManagement from '../../../components/admin/UsersManagement';
+---
+
+<AdminLayout title="Panel de Administración - Gestión de Juegos">
+    <div class="max-w-7xl mx-auto ">
+        <UsersManagement client:load />
+    </div>
+</AdminLayout>

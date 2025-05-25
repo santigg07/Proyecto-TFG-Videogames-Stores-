@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -77,17 +78,28 @@ class UserController extends Controller
     {
         $user = Auth::user();
         
-        $totalOrders = Order::where('user_id', $user->id)->count();
-        $totalSpent = Order::where('user_id', $user->id)
-            ->where('status', 'completed')
-            ->sum('total');
-        $wishlistCount = WishlistItem::where('user_id', $user->id)->count();
+        try {
+            $totalOrders = Order::where('user_id', $user->id)->count();
+            $totalSpent = Order::where('user_id', $user->id)
+                ->where('status', 'completed')
+                ->sum('total');
+            $wishlistCount = WishlistItem::where('user_id', $user->id)->count();
 
-        return response()->json([
-            'total_orders' => $totalOrders,
-            'total_spent' => number_format($totalSpent, 2),
-            'wishlist_count' => $wishlistCount,
-        ]);
+            return response()->json([
+                'total_orders' => $totalOrders,
+                'total_spent' => number_format((float)$totalSpent, 2, '.', ''), // ARREGLAR formato
+                'wishlist_count' => $wishlistCount,
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error en stats: ' . $e->getMessage());
+            
+            return response()->json([
+                'total_orders' => 0,
+                'total_spent' => '0.00',
+                'wishlist_count' => 0,
+            ]);
+        }
     }
 
     /**
@@ -97,39 +109,54 @@ class UserController extends Controller
     {
         $user = Auth::user();
         
-        // Combinar diferentes tipos de actividad
-        $activities = collect();
+        try {
+            // Combinar diferentes tipos de actividad
+            $activities = collect();
 
-        // Pedidos recientes
-        $recentOrders = Order::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get()
-            ->map(function ($order) {
-                return [
-                    'type' => 'order',
-                    'description' => "Pedido #{$order->id} - {$order->status}",
-                    'created_at' => $order->created_at,
-                ];
-            });
+            // Pedidos recientes - AÑADIR verificación de existencia
+            $recentOrders = Order::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get()
+                ->map(function ($order) {
+                    return [
+                        'type' => 'order',
+                        'description' => "Pedido #{$order->id} - {$order->status}",
+                        'created_at' => $order->created_at,
+                    ];
+                });
 
-        // Items añadidos a wishlist recientemente
-        $recentWishlist = WishlistItem::with('game')
-            ->where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->take(3)
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'type' => 'wishlist',
-                    'description' => "Añadiste {$item->game->name} a tu lista de deseos",
-                    'created_at' => $item->created_at,
-                ];
-            });
+            // Items añadidos a wishlist recientemente - AÑADIR verificación
+            $recentWishlist = WishlistItem::with('game')
+                ->where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->take(3)
+                ->get()
+                ->map(function ($item) {
+                    // VERIFICAR que game existe
+                    if (!$item->game) {
+                        return null;
+                    }
+                    
+                    return [
+                        'type' => 'wishlist',
+                        'description' => "Añadiste {$item->game->name} a tu lista de deseos",
+                        'created_at' => $item->created_at,
+                    ];
+                })
+                ->filter(); // Eliminar elementos null
 
-        $activities = $activities->merge($recentOrders)->merge($recentWishlist);
-        
-        return response()->json($activities->sortByDesc('created_at')->take(10)->values());
+            $activities = $activities->merge($recentOrders)->merge($recentWishlist);
+            
+            return response()->json($activities->sortByDesc('created_at')->take(10)->values());
+            
+        } catch (\Exception $e) {
+            // AÑADIR logging del error
+            Log::error('Error en recentActivity: ' . $e->getMessage());
+            
+            // Devolver respuesta vacía en caso de error
+            return response()->json([]);
+        }
     }
 
     /**
@@ -310,7 +337,7 @@ class UserController extends Controller
             $user->$column = $value;
         }
         // Ensure $user is an Eloquent model before saving
-        if ($user instanceof \Illuminate\Database\Eloquent\Model) {
+        if ($user instanceof User) {  
             $user->save();
         }
 
