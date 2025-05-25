@@ -1,76 +1,150 @@
 // src/hooks/useAuth.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export function useAuth() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Referencias para controlar las peticiones
+  const isCheckingRef = useRef(false);
+  const lastCheckTime = useRef(0);
+  const pendingCheck = useRef(null);
+  
+  // Duración mínima entre verificaciones: 30 segundos
+  const MIN_CHECK_INTERVAL = 30 * 1000;
 
   // Función para limpiar la autenticación
   const clearAuth = () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
-    localStorage.removeItem('auth_expires_at');
+    localStorage.removeItem('auth_last_check');
     setUser(null);
     setIsAuthenticated(false);
     
-    // Disparar evento de cambio de estado
     document.dispatchEvent(new CustomEvent('auth-state-changed', {
       detail: { authenticated: false }
     }));
   };
 
-  // Verificar el estado de autenticación al cargar
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('auth_token');
-      const expiresAt = localStorage.getItem('auth_expires_at');
+  // Verificar autenticación solo localmente (sin peticiones)
+  const checkAuthLocal = () => {
+    const token = localStorage.getItem('auth_token');
+    const userData = localStorage.getItem('auth_user');
+    
+    if (!token || !userData) {
+      clearAuth();
+      return false;
+    }
+    
+    try {
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+      setIsAuthenticated(true);
       
-      // Si no hay token o ha expirado
-      if (!token || (expiresAt && new Date().getTime() > parseInt(expiresAt))) {
-        clearAuth();
-        return;
-      }
+      document.dispatchEvent(new CustomEvent('auth-state-changed', {
+        detail: { authenticated: true, user: parsedUser }
+      }));
+      return true;
+    } catch (err) {
+      console.error('Error parsing user data:', err);
+      clearAuth();
+      return false;
+    }
+  };
 
-      try {
-        const response = await fetch('http://localhost:8000/api/user', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
+  // Verificar con servidor con throttling agresivo
+  const verifyWithServer = async (force = false) => {
+    const now = Date.now();
+    const lastCheck = parseInt(localStorage.getItem('auth_last_check') || '0');
+    
+    // REGLA ESTRICTA: Solo verificar si han pasado más de 30 segundos O si es forzado
+    if (!force && (now - lastCheck) < MIN_CHECK_INTERVAL) {
+      console.log('Verificación omitida - muy pronto desde la última');
+      return;
+    }
+    
+    // Solo permitir una verificación a la vez
+    if (isCheckingRef.current) {
+      console.log('Verificación ya en progreso');
+      return;
+    }
+    
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      clearAuth();
+      return;
+    }
 
-        if (response.ok) {
-          const userData = await response.json();
-          localStorage.setItem('auth_user', JSON.stringify(userData));
-          setUser(userData);
-          setIsAuthenticated(true);
-          
-          // Disparar evento de cambio de estado
-          document.dispatchEvent(new CustomEvent('auth-state-changed', {
-            detail: { authenticated: true, user: userData }
-          }));
-        } else {
-          clearAuth();
+    isCheckingRef.current = true;
+    console.log('Verificando con servidor...');
+
+    try {
+      const response = await fetch('http://localhost:8000/api/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
         }
-      } catch (err) {
-        console.error('Error checking auth state:', err);
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+        localStorage.setItem('auth_last_check', now.toString());
+        
+        setUser(userData);
+        setIsAuthenticated(true);
+        
+        document.dispatchEvent(new CustomEvent('auth-state-changed', {
+          detail: { authenticated: true, user: userData }
+        }));
+        
+        console.log('Verificación exitosa');
+      } else if (response.status === 401) {
+        console.log('Token inválido, limpiando sesión');
         clearAuth();
+      }
+    } catch (err) {
+      console.error('Error verificando con servidor:', err);
+      // Mantener estado local en caso de error de red
+    } finally {
+      isCheckingRef.current = false;
+    }
+  };
+
+  // Inicialización - solo verificar localmente
+  useEffect(() => {
+    if (checkAuthLocal()) {
+      setIsInitialized(true);
+      
+      // Verificar con servidor solo si han pasado más de 30 segundos
+      const lastCheck = parseInt(localStorage.getItem('auth_last_check') || '0');
+      const now = Date.now();
+      
+      if ((now - lastCheck) > MIN_CHECK_INTERVAL) {
+        setTimeout(() => verifyWithServer(), 2000); // Delay de 2 segundos
+      }
+    } else {
+      setIsInitialized(true);
+    }
+
+    // Limpiar cualquier verificación pendiente al desmontar
+    return () => {
+      if (pendingCheck.current) {
+        clearTimeout(pendingCheck.current);
       }
     };
-
-    checkAuth();
   }, []);
 
   // Función de login
   const login = async (email, password) => {
-    console.log("Iniciando login con:", { email, password: "***" });
+    console.log("Iniciando login...");
     setIsLoading(true);
     setError(null);
 
     try {
-      console.log("Haciendo petición a la API...");
       const response = await fetch('http://localhost:8000/api/login', {
         method: 'POST',
         headers: {
@@ -80,35 +154,22 @@ export function useAuth() {
         body: JSON.stringify({ email, password })
       });
 
-      console.log("Respuesta recibida:", {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      });
-
       const data = await response.json();
-      console.log("Datos de respuesta:", data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Error al iniciar sesión');
       }
 
-      // Guardar token y datos del usuario con nuevo formato
-      console.log("Guardando token y datos de usuario...");
+      // Guardar datos y marcar última verificación
+      const now = Date.now();
       localStorage.setItem('auth_token', data.token);
       localStorage.setItem('auth_user', JSON.stringify(data.user));
-      
-      // Establecer expiración en 8 horas
-      const expiresAt = new Date().getTime() + (8 * 60 * 60 * 1000);
-      localStorage.setItem('auth_expires_at', expiresAt.toString());
-      
-      console.log("Token y usuario guardados en localStorage");
+      localStorage.setItem('auth_last_check', now.toString());
       
       setUser(data.user);
       setIsAuthenticated(true);
       
       // Disparar eventos
-      console.log("Disparando eventos de login exitoso");
       document.dispatchEvent(new CustomEvent('user-logged-in', { 
         detail: { user: data.user } 
       }));
@@ -126,7 +187,6 @@ export function useAuth() {
       return null;
     } finally {
       setIsLoading(false);
-      console.log("Proceso de login finalizado");
     }
   };
 
@@ -160,17 +220,15 @@ export function useAuth() {
         throw new Error(data.message || 'Error al registrarse');
       }
 
-      // Guardar token y datos del usuario
+      // Guardar datos
+      const now = Date.now();
       localStorage.setItem('auth_token', data.token);
       localStorage.setItem('auth_user', JSON.stringify(data.user));
-      
-      const expiresAt = new Date().getTime() + (8 * 60 * 60 * 1000);
-      localStorage.setItem('auth_expires_at', expiresAt.toString());
+      localStorage.setItem('auth_last_check', now.toString());
       
       setUser(data.user);
       setIsAuthenticated(true);
       
-      // Disparar eventos
       document.dispatchEvent(new CustomEvent('auth-state-changed', {
         detail: { authenticated: true, user: data.user }
       }));
@@ -203,7 +261,7 @@ export function useAuth() {
       clearAuth();
     } catch (err) {
       console.error('Error durante logout:', err);
-      clearAuth(); // Limpiar datos localmente aunque falle la petición
+      clearAuth();
     } finally {
       setIsLoading(false);
     }
@@ -216,6 +274,7 @@ export function useAuth() {
     login,
     register,
     logout,
-    isAuthenticated
+    isAuthenticated,
+    isInitialized
   };
 }

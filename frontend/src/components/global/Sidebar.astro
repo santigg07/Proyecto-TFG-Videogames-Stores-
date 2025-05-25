@@ -92,24 +92,26 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
       </button>
     </div>
     <div class="section-content block overflow-hidden">
-      <a href="/profile" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+      <!-- Opciones siempre visibles -->
+      <a href="/profile" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
         <i class="fas fa-user text-lg w-6 text-center mr-2.5"></i>
         <span class="nav-text whitespace-nowrap">Perfil</span>
       </a>
-      <a href="/profile/orders" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+      <a href="/profile/orders" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
         <i class="fas fa-shopping-bag text-lg w-6 text-center mr-2.5"></i>
         <span class="nav-text whitespace-nowrap">Mis pedidos</span>
       </a>
-      <a href="/profile/wishlist" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+      <a href="/profile/wishlist" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
         <i class="fas fa-heart text-lg w-6 text-center mr-2.5"></i>
         <span class="nav-text whitespace-nowrap">Lista de deseos</span>
       </a>
-      <a href="/profile/settings" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+      <a href="/profile/settings" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
         <i class="fas fa-cog text-lg w-6 text-center mr-2.5"></i>
         <span class="nav-text whitespace-nowrap">Configuración</span>
       </a>
-      <!-- Añadir este botón de logout -->
-      <a href="#" id="logout-button" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+      
+      <!-- Botón de logout SOLO visible cuando hay sesión activa -->
+      <a href="#" id="logout-button" class="nav-item authenticated-only flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white" style="display: none;">
         <i class="fas fa-sign-out-alt text-lg w-6 text-center mr-2.5"></i>
         <span class="nav-text whitespace-nowrap">Cerrar sesión</span>
       </a>
@@ -124,34 +126,29 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
         </button>
       </div>
       <div class="section-content block overflow-hidden">
-        <a href="/admin/games" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+        <a href="/admin/games" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
           <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
           <span class="nav-text whitespace-nowrap">Gestionar Juegos</span>
         </a>
-        <a href="/admin/consoles" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+        <a href="/admin/consoles" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
           <i class="fas fa-tv text-lg w-6 text-center mr-2.5"></i>
           <span class="nav-text whitespace-nowrap">Consolas</span>
         </a>
-        <a href="/admin/categories" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+        <a href="/admin/categories" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
           <i class="fas fa-tags text-lg w-6 text-center mr-2.5"></i>
           <span class="nav-text whitespace-nowrap">Categorías</span>
         </a>
-        <a href="/admin/users" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+        <a href="/admin/users" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
           <i class="fas fa-users text-lg w-6 text-center mr-2.5"></i>
           <span class="nav-text whitespace-nowrap">Usuarios</span>
         </a>
-        <a href="/admin/orders" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+        <a href="/admin/orders" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
           <i class="fas fa-shopping-cart text-lg w-6 text-center mr-2.5"></i>
           <span class="nav-text whitespace-nowrap">Pedidos</span>
         </a>
       </div>
     </div>
-
-
-
   </div>
-
-  
 
   <div class="sidebar-footer p-4 border-t border-[#2a344a]">
     <div class="user-profile flex items-center">
@@ -159,15 +156,16 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
         <img src="/assets/images/avatar-placeholder.png" alt="Avatar" class="w-full h-full object-cover" onerror="this.src='/assets/images/fallback-avatar.png'; this.onerror=null;">
       </div>
       <div class="user-info flex-1 min-w-0">
-        <div id="sidebar-username" class="username font-bold text-sm whitespace-nowrap overflow-hidden text-ellipsis"></div>
-        <div id="sidebar-email" class="email text-xs text-[#a0aec0] whitespace-nowrap overflow-hidden text-ellipsis"></div>
+        <div id="sidebar-username" class="username font-bold text-sm whitespace-nowrap overflow-hidden text-ellipsis">Invitado</div>
+        <div id="sidebar-email" class="email text-xs text-[#a0aec0] whitespace-nowrap overflow-hidden text-ellipsis">Inicia sesión</div>
       </div>
       <button class="settings-button bg-transparent border-0 text-[#a0aec0] cursor-pointer text-base ml-2.5">
         <i class="fas fa-cog"></i>
       </button>
     </div>
   </div>
-    <!-- Área donde se mostrará el modal de confirmación -->
+  
+  <!-- Área donde se mostrará el modal de confirmación -->
   <div id="logout-confirmation-container"></div>
 </div>
 
@@ -238,9 +236,8 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
     // Toggle submenus
     submenuToggles.forEach(toggle => {
       toggle.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent propagation to parent items
+        e.stopPropagation();
         
-        // Don't toggle if sidebar is collapsed - we use hover for that case
         if (sidebar.classList.contains('collapsed')) {
           return;
         }
@@ -263,17 +260,14 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
     // Also toggle submenu when clicking on the submenu header
     document.querySelectorAll('.submenu-header').forEach(header => {
       header.addEventListener('click', (e) => {
-        // Don't toggle if sidebar is collapsed - we use hover for that case
         if (sidebar.classList.contains('collapsed')) {
           return;
         }
         
-        // Only toggle if the target is not the toggle button itself (that's handled above)
         if (!e.target.closest('.toggle-submenu')) {
           const submenuContent = e.currentTarget.closest('.submenu-container').querySelector('.submenu-content');
           submenuContent.classList.toggle('active');
           
-          // Rotate icon on the toggle button
           const icon = e.currentTarget.querySelector('.toggle-submenu i');
           if (icon) {
             if (submenuContent.classList.contains('active')) {
@@ -291,7 +285,7 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
     if (mobileMenuButton) {
       mobileMenuButton.addEventListener('click', () => {
         sidebar.classList.add('mobile-open');
-        sidebar.classList.remove('collapsed'); // Ensure sidebar is expanded when opened on mobile
+        sidebar.classList.remove('collapsed');
         sidebarOverlay.classList.remove('hidden');
       });
     }
@@ -313,7 +307,6 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
         }
         sidebar.classList.remove('mobile-open');
       } else {
-        // Si estamos en móvil y no está abierto, ocultarlo
         if (!sidebar.classList.contains('mobile-open')) {
           sidebar.classList.add('-translate-x-full');
         }
@@ -325,7 +318,6 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
       sidebar.classList.add('-translate-x-full');
     }
 
-    // Sección del admin
     // Verificar si el usuario es admin para mostrar la sección
     function checkAdminStatus() {
       const user = localStorage.getItem('auth_user');
@@ -334,34 +326,28 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
       if (user && adminSection) {
         try {
           const userData = JSON.parse(user);
-          // Si el usuario tiene role_id = 1 (admin), mostrar la sección
           if (userData.role_id === 1) {
             adminSection.classList.remove('hidden');
+          } else {
+            adminSection.classList.add('hidden');
           }
         } catch (error) {
           console.error('Error parsing user data:', error);
+          adminSection.classList.add('hidden');
         }
+      } else if (adminSection) {
+        adminSection.classList.add('hidden');
       }
     }
     
-    // Verificar estado de admin al cargar y cuando cambie la autenticación
-    checkAdminStatus();
-    
-    document.addEventListener('auth-state-changed', () => {
-      checkAdminStatus();
-    });
-
-
-    // Añadir funcionalidad para actualizar la información del usuario
     // Función para actualizar la información del usuario en el sidebar
-    // ACTUALIZAR SOLO ESTA PARTE - Función para actualizar información del usuario
     function updateUserInfo() {
-      // Usar los mismos nombres que useAuth.js
       const userStr = localStorage.getItem('auth_user');
       const token = localStorage.getItem('auth_token');
       
       const usernameElement = document.getElementById('sidebar-username');
       const emailElement = document.getElementById('sidebar-email');
+      const logoutButton = document.getElementById('logout-button');
       
       if (userStr && token) {
         try {
@@ -375,14 +361,13 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
             emailElement.textContent = user.email;
           }
           
-          // Mostrar elementos para usuarios autenticados
-          document.querySelectorAll('.authenticated-only').forEach(el => {
-            el.style.display = 'block';
-          });
+          // Mostrar SOLO el botón de logout
+          if (logoutButton) {
+            logoutButton.style.display = 'flex';
+          }
           
-          document.querySelectorAll('.guest-only').forEach(el => {
-            el.style.display = 'none';
-          });
+          // Verificar admin después de autenticar
+          checkAdminStatus();
         } catch (error) {
           console.error('Error parsing user data:', error);
           clearUserInfo();
@@ -395,23 +380,27 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
     function clearUserInfo() {
       const usernameElement = document.getElementById('sidebar-username');
       const emailElement = document.getElementById('sidebar-email');
+      const logoutButton = document.getElementById('logout-button');
       
       if (usernameElement) usernameElement.textContent = 'Invitado';
       if (emailElement) emailElement.textContent = 'Inicia sesión';
       
-      document.querySelectorAll('.authenticated-only').forEach(el => {
-        el.style.display = 'none';
-      });
+      // Ocultar SOLO el botón de logout
+      if (logoutButton) {
+        logoutButton.style.display = 'none';
+      }
       
-      document.querySelectorAll('.guest-only').forEach(el => {
-        el.style.display = 'block';
-      });
+      // Ocultar sección admin cuando no hay usuario
+      const adminSection = document.getElementById('admin-section');
+      if (adminSection) {
+        adminSection.classList.add('hidden');
+      }
     }
     
     // Actualizar al cargar
     updateUserInfo();
     
-    // Escuchar eventos de autenticación - USAR LOS MISMOS NOMBRES QUE useAuth.js
+    // Escuchar eventos de autenticación
     document.addEventListener('auth-state-changed', (event) => {
       console.log('Auth state changed:', event.detail);
       updateUserInfo();
@@ -422,14 +411,11 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
       updateUserInfo();
     });
     
-    // CORREGIR EL BOTÓN DE LOGOUT
-    // ACTUALIZAR SOLO EL BOTÓN DE LOGOUT
+    // Botón de logout (solo visible para usuarios autenticados)
     const logoutButton = document.getElementById('logout-button');
     if (logoutButton) {
       logoutButton.addEventListener('click', async (e) => {
         e.preventDefault();
-        
-        // Emitir evento para mostrar el modal React
         document.dispatchEvent(new CustomEvent('show-logout-confirmation'));
       });
     }
@@ -440,7 +426,6 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
         const token = localStorage.getItem('auth_token');
         
         if (token) {
-          // Hacer logout en el servidor
           await fetch('http://localhost:8000/api/logout', {
             method: 'POST',
             headers: {
@@ -454,6 +439,7 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
         localStorage.removeItem('auth_user');
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_expires_at');
+        localStorage.removeItem('auth_last_check');
 
         // Actualizar UI
         clearUserInfo();
@@ -475,11 +461,8 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
 
         // Redirigir sin recargar página
         setTimeout(() => {
-          // Solo cambiar la URL si no estamos ya en la página principal
           if (window.location.pathname !== '/') {
             window.history.pushState({}, '', '/');
-            
-            // Recargar solo el contenido, no toda la página
             window.dispatchEvent(new PopStateEvent('popstate'));
           }
         }, 1500);
@@ -487,7 +470,6 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
       } catch (error) {
         console.error('Error durante logout:', error);
         
-        // Toast de error
         document.dispatchEvent(new CustomEvent('show-toast', {
           detail: {
             title: '❌ Error',
@@ -509,18 +491,15 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
       'a[href="/profile/orders"]', 
       'a[href="/profile/wishlist"]',
       'a[href="/profile/settings"]',
-      //'a[href*="/profile"]', // Cualquier enlace que contenga /profile
-      '.protected-link' // Clase para otros enlaces protegidos
+      '.protected-link'
     ];
 
-    // Función para verificar autenticación
     function isAuthenticated() {
       const token = localStorage.getItem('auth_token');
       const user = localStorage.getItem('auth_user');
       return !!(token && user);
     }
 
-    // Función para mostrar toast y abrir modal de login
     function requireAuth(targetUrl) {
       document.dispatchEvent(new CustomEvent('show-toast', {
         detail: {
@@ -530,15 +509,13 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
           duration: 4000
         }
       }));
-
-      
     }
 
     // Añadir event listeners a todos los enlaces protegidos
     protectedLinks.forEach(selector => {
       document.querySelectorAll(selector).forEach(link => {
         link.addEventListener('click', (e) => {
-          e.preventDefault(); // Prevenir navegación
+          e.preventDefault();
           
           const targetUrl = link.getAttribute('href');
           
@@ -553,4 +530,3 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
     }); 
   });
 </script>
-
