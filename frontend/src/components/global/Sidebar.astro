@@ -114,7 +114,48 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
         <span class="nav-text whitespace-nowrap">Cerrar sesión</span>
       </a>
     </div>
+
+    <!--Sección del admin -->
+    <div id="admin-section" class="admin-section hidden">
+      <div class="section-header flex items-center justify-between px-4 py-2.5 text-[#64748b] text-xs font-bold uppercase tracking-wider border-t border-[#2a344a] cursor-pointer">
+        <span>ADMINISTRACIÓN</span>
+        <button class="toggle-section bg-transparent border-0 text-[#64748b] cursor-pointer text-xs">
+          <i class="fas fa-chevron-down"></i>
+        </button>
+      </div>
+      <div class="section-content block overflow-hidden">
+        <a href="/admin" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+          <i class="fas fa-tachometer-alt text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap">Dashboard</span>
+        </a>
+        <a href="/admin/games" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+          <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap">Gestionar Juegos</span>
+        </a>
+        <a href="/admin/consoles" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+          <i class="fas fa-tv text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap">Consolas</span>
+        </a>
+        <a href="/admin/categories" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+          <i class="fas fa-tags text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap">Categorías</span>
+        </a>
+        <a href="/admin/users" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+          <i class="fas fa-users text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap">Usuarios</span>
+        </a>
+        <a href="/admin/orders" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white ">
+          <i class="fas fa-shopping-cart text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap">Pedidos</span>
+        </a>
+      </div>
+    </div>
+
+
+
   </div>
+
+  
 
   <div class="sidebar-footer p-4 border-t border-[#2a344a]">
     <div class="user-profile flex items-center">
@@ -288,6 +329,33 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
       sidebar.classList.add('-translate-x-full');
     }
 
+    // Sección del admin
+    // Verificar si el usuario es admin para mostrar la sección
+    function checkAdminStatus() {
+      const user = localStorage.getItem('auth_user');
+      const adminSection = document.getElementById('admin-section');
+      
+      if (user && adminSection) {
+        try {
+          const userData = JSON.parse(user);
+          // Si el usuario tiene role_id = 1 (admin), mostrar la sección
+          if (userData.role_id === 1) {
+            adminSection.classList.remove('hidden');
+          }
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+        }
+      }
+    }
+    
+    // Verificar estado de admin al cargar y cuando cambie la autenticación
+    checkAdminStatus();
+    
+    document.addEventListener('auth-state-changed', () => {
+      checkAdminStatus();
+    });
+
+
     // Añadir funcionalidad para actualizar la información del usuario
     // Función para actualizar la información del usuario en el sidebar
     // ACTUALIZAR SOLO ESTA PARTE - Función para actualizar información del usuario
@@ -439,7 +507,7 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
       }
     });
 
-    // ✅ NUEVO: Interceptar clics en enlaces protegidos
+    // Interceptar clics en enlaces protegidos
     const protectedLinks = [
       'a[href="/profile"]',
       'a[href="/profile/orders"]', 

@@ -18,7 +18,6 @@ export default function ProfileForm() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // URL del backend
   const API_URL = 'http://localhost:8000/api';
 
   useEffect(() => {
@@ -84,8 +83,6 @@ export default function ProfileForm() {
         return;
       }
 
-      console.log('Enviando datos del perfil:', userData);
-
       const response = await fetch(`${API_URL}/user/profile`, {
         method: 'PUT',
         headers: {
@@ -95,8 +92,6 @@ export default function ProfileForm() {
         },
         body: JSON.stringify(userData)
       });
-
-      console.log('Respuesta del servidor:', response.status);
 
       const result = await response.json();
 
@@ -121,7 +116,6 @@ export default function ProfileForm() {
         }));
         
       } else {
-        console.error('Error del servidor:', result);
         setError(result.message || 'Error al actualizar el perfil');
       }
     } catch (error) {
