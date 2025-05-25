@@ -11,6 +11,9 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WishlistController;
 // CORREGIR: Usar el namespace correcto para Admin
 use App\Http\Controllers\Api\Admin\GameController as AdminGameController;
+use App\Http\Controllers\Api\Admin\ConsoleController as AdminConsoleController;
+use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 
 // Rutas de autenticación (públicas)
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -45,12 +48,21 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     // Manejo de imágenes
     Route::delete('/games/{gameId}/images/{imageId}', [AdminGameController::class, 'deleteImage']);
 
-    // Rutas para gestión de consolas (solo admin)       
-    // CRUD completo de consolas
-    Route::apiResource('consoles', App\Http\Controllers\Api\ConsoleController::class);
-    
+    // Rutas para gestión de consolas - CORREGIDO: Usar AdminConsoleController        
+    // CRUD completo de consolas usando el controlador Admin
+    Route::apiResource('consoles', AdminConsoleController::class);
     // Ruta adicional para obtener todas las consolas (para dropdowns)
-    Route::get('consoles-all', [App\Http\Controllers\Api\ConsoleController::class, 'all']);
+    Route::get('consoles-all', [AdminConsoleController::class, 'all']);
+
+    // Rutas para gestión de categorías - CRUD completo
+    Route::apiResource('categories', AdminCategoryController::class);
+    // Ruta adicional para obtener todas las categorías (para dropdowns)
+    Route::get('categories-all', [AdminCategoryController::class, 'all']);
+
+        // Rutas para gestión de usuarios - CRUD completo
+    Route::apiResource('users', AdminUserController::class);
+    // Ruta adicional para obtener todos los roles (para dropdowns)
+    Route::get('roles', [AdminUserController::class, 'getRoles']);
         
     
 });

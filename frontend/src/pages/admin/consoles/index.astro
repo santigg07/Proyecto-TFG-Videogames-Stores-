@@ -1,47 +1,14 @@
 ---
 // src/pages/admin/consoles/index.astro
 import AdminLayout from '../../../layouts/AdminLayout.astro';
+import ConsolesManagement from '../../../components/admin/ConsolesManagement';
 ---
 
 <AdminLayout title="Gestión de Consolas">
-  <div id="consoles-management-root"></div>
+  <div class="max-w-7xl mx-auto">
+    <ConsolesManagement client:load />
 </AdminLayout>
 
-<script>
-  import ConsolesManagement from '../../../components/admin/ConsolesManagement.jsx';
-  import React from 'react';
-  import { createRoot } from 'react-dom/client';
-
-  // Verificar autenticación y permisos
-  const checkAuth = () => {
-    const token = localStorage.getItem('auth_token');
-    const userRole = localStorage.getItem('user_role');
-    
-    if (!token || userRole !== 'admin') {
-      window.location.href = '/admin';
-      return false;
-    }
-    return true;
-  };
-
-  // Inicializar la aplicación React
-  const initializeApp = () => {
-    if (!checkAuth()) return;
-    
-    const container = document.getElementById('consoles-management-root');
-    if (container) {
-      const root = createRoot(container);
-      root.render(React.createElement(ConsolesManagement));
-    }
-  };
-
-  // Ejecutar cuando el DOM esté listo
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeApp);
-  } else {
-    initializeApp();
-  }
-</script>
 
 <style>
   /* Estilos específicos para la página de consolas */

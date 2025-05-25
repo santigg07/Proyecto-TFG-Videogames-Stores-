@@ -1,0 +1,11 @@
+---
+// src/pages/admin/games/index.astro
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import CategoriesManagement from '../../../components/admin/CategoriesManagement';
+---
+
+<AdminLayout title="Panel de Administración - Gestión de Juegos">
+    <div class="max-w-7xl mx-auto ">
+        <CategoriesManagement client:load />
+    </div>
+</AdminLayout>

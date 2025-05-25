@@ -129,7 +129,7 @@ export default function ConsoleForm({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 overflow-y-auto  bg-opacity-50">
       <div className="flex min-h-full items-center justify-center p-2 sm:p-4">
         <div className="w-full max-w-2xl bg-gray-800 rounded-lg shadow-xl max-h-[90vh] overflow-hidden flex flex-col">
           {/* Header fijo */}
