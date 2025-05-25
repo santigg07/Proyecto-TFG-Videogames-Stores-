@@ -22,7 +22,7 @@ export default function LogoutConfirmation() {
     document.dispatchEvent(new CustomEvent('logout-confirmed'));
   };
 
-  const handleCancel = () => {
+  const handleClose = () => {
     setIsOpen(false);
   };
 
@@ -35,7 +35,7 @@ export default function LogoutConfirmation() {
       cancelText="Cancelar"
       type="danger"
       onConfirm={handleConfirm}
-      onCancel={handleCancel}
+      onClose={handleClose} // 
     />
   );
 }
