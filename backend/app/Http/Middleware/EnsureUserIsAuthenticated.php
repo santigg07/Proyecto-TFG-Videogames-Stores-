@@ -1,6 +1,5 @@
-
 <?php
-/*
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -11,8 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureUserIsAuthenticated
 {
     
-     Handle an incoming request.
-    
+    /* Handle an incoming request.
+    */
     public function handle(Request $request, Closure $next): Response
     {
         // Verificar si el usuario está autenticado
@@ -37,4 +36,3 @@ class EnsureUserIsAuthenticated
         return $next($request);
     }
 }
-*/

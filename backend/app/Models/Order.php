@@ -1,13 +1,15 @@
 <?php
+// backend/app/Models/Order.php
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'total',
@@ -23,64 +25,46 @@ class Order extends Model
     ];
 
     /**
-     * Relación con el usuario
+     * Obtener el usuario propietario de la orden.
      */
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
     /**
-     * Relación con los items de la orden
+     * Obtener los artículos para el pedido.
      */
-    public function items(): HasMany
+    public function items()
     {
         return $this->hasMany(OrderItem::class);
     }
 
     /**
-     * Scope para órdenes completadas
-     */
-    public function scopeCompleted($query)
-    {
-        return $query->where('status', 'completed');
-    }
-
-    /**
-     * Scope para órdenes pendientes
-     */
-    public function scopePending($query)
-    {
-        return $query->where('status', 'pending');
-    }
-
-    /**
-     * Calcular total de items
-     */
-    public function getTotalItemsAttribute(): int
-    {
-        return $this->items->sum('quantity');
-    }
-
-    /**
      * Obtener estado formateado
      */
-    public function getStatusTextAttribute(): string
+    public function getFormattedStatusAttribute()
     {
-        return match($this->status) {
+        $statuses = [
             'pending' => 'Pendiente',
             'processing' => 'Procesando',
-            'completed' => 'Completada',
-            'cancelled' => 'Cancelada',
-            default => 'Desconocido'
-        };
+            'completed' => 'Completado',
+            'cancelled' => 'Cancelado'
+        ];
+
+        return $statuses[$this->status] ?? $this->status;
     }
 
     /**
-     * Verificar si la orden se puede cancelar
+     * Obtener el formato de la forma de pago
      */
-    public function canBeCancelled(): bool
+    public function getFormattedPaymentMethodAttribute()
     {
-        return in_array($this->status, ['pending', 'processing']);
+        $methods = [
+            'stripe' => 'Tarjeta de Crédito',
+            'paypal' => 'PayPal'
+        ];
+
+        return $methods[$this->payment_method] ?? $this->payment_method;
     }
 }

@@ -145,13 +145,35 @@ class AuthController extends Controller
                 ], 401);
             }
             
-            // SIN LOGGING AQUÍ - se llama demasiado frecuentemente
-            return response()->json($user);
+            // Devolver todos los campos necesarios para el checkout
+            return response()->json([
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'address' => $user->address,
+                'city' => $user->city,
+                'postal_code' => $user->postal_code,
+                'country' => $user->country,
+                'birth_date' => $user->birth_date,
+                'role_id' => $user->role_id,
+                'notifications_offers' => $user->notifications_offers,
+                'notifications_products' => $user->notifications_products,
+                'notifications_orders' => $user->notifications_orders,
+                'notifications_newsletter' => $user->notifications_newsletter,
+                'privacy_public_profile' => $user->privacy_public_profile,
+                'privacy_wishlist' => $user->privacy_wishlist,
+                'privacy_purchase_history' => $user->privacy_purchase_history,
+                'two_factor_enabled' => $user->two_factor_enabled,
+                'created_at' => $user->created_at,
+            ]);
+            
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener información del usuario'
             ], 500);
         }
+        
     }
 
     /**

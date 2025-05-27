@@ -1,4 +1,5 @@
 <?php
+// backend/app/Models/CartItem.php
 
 namespace App\Models;
 
@@ -18,13 +19,11 @@ class CartItem extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
-        'quantity' => 'integer',
-        'user_id' => 'integer',
-        'game_id' => 'integer'
+        'quantity' => 'integer'
     ];
 
     /**
-     * Get the user that owns the cart item
+     * Obtiene el usuario propietario del artículo del carrito.
      */
     public function user()
     {
@@ -32,18 +31,10 @@ class CartItem extends Model
     }
 
     /**
-     * Get the game associated with the cart item
+     * Obtiene el juego asociado al artículo del carrito.
      */
     public function game()
     {
         return $this->belongsTo(Game::class);
-    }
-
-    /**
-     * Get the total price for this cart item
-     */
-    public function getTotalAttribute()
-    {
-        return $this->price * $this->quantity;
     }
 }

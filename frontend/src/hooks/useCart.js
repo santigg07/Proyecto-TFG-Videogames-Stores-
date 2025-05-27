@@ -5,7 +5,7 @@ export const useCart = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch cart items from API
+  // Obtener artículos del carrito desde la API
   const fetchCart = useCallback(async () => {
     const token = localStorage.getItem('auth_token');
     if (!token) {
@@ -47,7 +47,7 @@ export const useCart = () => {
     }
   }, []);
 
-  // Add item to cart
+  // Añadir artículo a la cesta
   const addToCart = async (gameId, quantity = 1) => {
     const token = localStorage.getItem('auth_token');
     if (!token) {
@@ -94,7 +94,7 @@ export const useCart = () => {
     }
   };
 
-  // Update item quantity
+  // Actualizar la cantidad de artículos
   const updateQuantity = async (itemId, quantity) => {
     if (quantity < 1) return;
 
@@ -118,7 +118,7 @@ export const useCart = () => {
     }
   };
 
-  // Remove item from cart
+  // Eliminar artículo de la cesta
   const removeItem = async (itemId) => {
     const token = localStorage.getItem('auth_token');
     try {
@@ -139,7 +139,7 @@ export const useCart = () => {
     }
   };
 
-  // Clear cart
+  // Limpiar carrito
   const clearCart = async () => {
     const token = localStorage.getItem('auth_token');
     try {
@@ -160,7 +160,7 @@ export const useCart = () => {
     }
   };
 
-  // Calculate totals
+  // Calcular el total del carrito y el número de artículos
   const getCartTotal = () => {
     return cartItems.reduce((sum, item) => {
       const price = item.price || 0;
@@ -173,18 +173,18 @@ export const useCart = () => {
     return cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
   };
 
-  // Load cart on mount
+  // Cargar el carrito 
   useEffect(() => {
     fetchCart();
 
-    // Listen for cart updates from other components
+    // Escuchar las actualizaciones del carro de otros componentes
     const handleCartUpdate = () => {
       fetchCart();
     };
 
     window.addEventListener('cartUpdated', handleCartUpdate);
     
-    // Listen for auth changes
+    // Escuchar los cambios de autenticación
     const handleStorageChange = (e) => {
       if (e.key === 'auth_token') {
         fetchCart();

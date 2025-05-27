@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 class CartController extends Controller
 {
     /**
-     * Display the user's cart
+     * Mostrar el carrito del usuario
      */
     public function index(): JsonResponse
     {
@@ -33,7 +33,7 @@ class CartController extends Controller
     }
 
     /**
-     * Add item to cart
+     * Añadir artículo a la cesta
      */
     public function store(Request $request): JsonResponse
     {
@@ -92,7 +92,7 @@ class CartController extends Controller
     }
 
     /**
-     * Update cart item quantity
+     * Actualizar la cantidad de artículos del carrito
      */
     public function update(Request $request, int $itemId): JsonResponse
     {
@@ -129,7 +129,7 @@ class CartController extends Controller
     }
 
     /**
-     * Remove item from cart
+     * Eliminar un artículo del carrito
      */
     public function destroy(int $itemId): JsonResponse
     {
@@ -148,7 +148,7 @@ class CartController extends Controller
     }
 
     /**
-     * Clear entire cart
+     * Limpiar el carrito del usuario
      */
     public function clear(): JsonResponse
     {
@@ -163,7 +163,7 @@ class CartController extends Controller
     }
 
     /**
-     * Get cart summary
+     * Obtener resumen del carrito
      */
     public function summary(): JsonResponse
     {
