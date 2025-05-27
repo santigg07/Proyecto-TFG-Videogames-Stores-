@@ -1,209 +1,379 @@
 <?php
+// app/Http/Controllers/Api/OrderController.php
 
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\CartItem;
 use App\Models\Game;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
     /**
-     * Mostrar todos los pedidos del usuario autenticado
-     *
-     * @return \Illuminate\Http\Response
+     * Crear nueva orden desde el carrito
      */
-    public function index()
+    public function create(Request $request): JsonResponse
     {
-        $userId = Auth::id();
-        
-        $orders = Order::where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($order) {
-                return [
-                    'id' => $order->id,
-                    'total' => $order->total,
-                    'status' => $order->status,
-                    'payment_method' => $order->payment_method,
-                    'created_at' => $order->created_at,
-                    'items_count' => $order->items->count()
-                ];
-            });
-        
-        return response()->json($orders);
-    }
-    
-    /**
-     * Mostrar un pedido específico
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        $userId = Auth::id();
-        
-        $order = Order::where('id', $id)
-            ->where('user_id', $userId)
-            ->with(['items.game.console'])
-            ->firstOrFail();
-        
-        $orderData = [
-            'id' => $order->id,
-            'total' => $order->total,
-            'status' => $order->status,
-            'payment_method' => $order->payment_method,
-            'payment_id' => $order->payment_id,
-            'shipping_address' => $order->shipping_address,
-            'created_at' => $order->created_at,
-            'items' => $order->items->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'game_id' => $item->game_id,
-                    'name' => $item->game->name,
-                    'console' => $item->game->console->name,
-                    'price' => $item->price,
-                    'quantity' => $item->quantity,
-                    'subtotal' => $item->price * $item->quantity,
-                    'image' => $item->game->image
-                ];
-            })
-        ];
-        
-        return response()->json($orderData);
-    }
-    
-    /**
-     * Crear un nuevo pedido
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'payment_method' => 'required|in:stripe,paypal',
-            'payment_id' => 'required|string',
-            'shipping_address' => 'required|string'
-        ]);
-        
-        $userId = Auth::id();
-        $cart = $this->getCurrentCart();
-        
-        if (empty($cart)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El carrito está vacío'
-            ], 400);
-        }
-        
-        // Obtener detalles de los productos
-        $cartItems = [];
-        $total = 0;
-        
-        foreach ($cart as $gameId => $quantity) {
-            $game = Game::find($gameId);
+        try {
+            $request->validate([
+                'shipping_address' => 'required|array',
+                'shipping_address.address' => 'required|string|max:255',
+                'shipping_address.city' => 'required|string|max:100',
+                'shipping_address.postal_code' => 'required|string|max:20',
+                'shipping_address.country' => 'required|string|max:100',
+                'payment_method' => 'required|string|in:stripe,paypal'
+            ]);
+
+            $user = Auth::user();
+
+            // Verificar que el carrito no esté vacío
+            $cartItems = CartItem::with('game')->forUser($user->id)->get();
             
-            if (!$game) {
-                continue;
-            }
-            
-            if ($game->stock < $quantity) {
+            if ($cartItems->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => "No hay suficiente stock de {$game->name}"
+                    'message' => 'El carrito está vacío'
                 ], 400);
             }
-            
-            $price = $game->sale_price ?? $game->price;
-            $subtotal = $price * $quantity;
-            $total += $subtotal;
-            
-            $cartItems[] = [
-                'game_id' => $game->id,
-                'price' => $price,
-                'quantity' => $quantity
-            ];
-        }
-        
-        // Comenzar transacción para garantizar consistencia
-        DB::beginTransaction();
-        
-        try {
-            // Crear la orden
-            $order = new Order();
-            $order->user_id = $userId;
-            $order->total = $total;
-            $order->status = 'pending';
-            $order->payment_method = $request->payment_method;
-            $order->payment_id = $request->payment_id;
-            $order->shipping_address = $request->shipping_address;
-            $order->save();
-            
-            // Crear los items de la orden
-            foreach ($cartItems as $item) {
-                $orderItem = new OrderItem();
-                $orderItem->order_id = $order->id;
-                $orderItem->game_id = $item['game_id'];
-                $orderItem->quantity = $item['quantity'];
-                $orderItem->price = $item['price'];
-                $orderItem->save();
-                
-                // Actualizar stock
-                $game = Game::find($item['game_id']);
-                $game->stock -= $item['quantity'];
-                $game->save();
+
+            // Verificar stock de todos los productos
+            foreach ($cartItems as $cartItem) {
+                if ($cartItem->quantity > $cartItem->game->stock) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "No hay suficiente stock para {$cartItem->game->name}. Disponible: {$cartItem->game->stock}"
+                    ], 400);
+                }
             }
-            
-            // Vaciar el carrito
-            $this->clearCart();
-            
+
+            DB::beginTransaction();
+
+            // Calcular total
+            $total = $cartItems->sum(function ($item) {
+                return $item->price * $item->quantity;
+            });
+
+            // Crear la orden
+            $order = Order::create([
+                'user_id' => $user->id,
+                'total' => $total,
+                'status' => 'pending',
+                'payment_method' => $request->payment_method,
+                'shipping_address' => json_encode($request->shipping_address)
+            ]);
+
+            // Crear items de la orden y actualizar stock
+            foreach ($cartItems as $cartItem) {
+                // Crear OrderItem
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'game_id' => $cartItem->game_id,
+                    'quantity' => $cartItem->quantity,
+                    'price' => $cartItem->price
+                ]);
+
+                // Reducir stock
+                $cartItem->game->decrement('stock', $cartItem->quantity);
+            }
+
+            // Limpiar carrito
+            CartItem::forUser($user->id)->delete();
+
             DB::commit();
-            
+
+            // Cargar orden con relaciones
+            $order->load(['items.game.console', 'user']);
+
             return response()->json([
                 'success' => true,
-                'message' => 'Pedido creado correctamente',
-                'order_id' => $order->id
-            ]);
-        } catch (\Exception $e) {
+                'message' => 'Orden creada exitosamente',
+                'data' => [
+                    'order' => $this->formatOrder($order),
+                    'payment_data' => $this->preparePaymentData($order, $request->payment_method)
+                ]
+            ], 201);
+
+        } catch (ValidationException $e) {
             DB::rollBack();
-            
             return response()->json([
                 'success' => false,
-                'message' => 'Error al crear el pedido: ' . $e->getMessage()
+                'message' => 'Datos inválidos',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear la orden',
+                'error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }
-    
+
     /**
-     * Obtener el carrito actual
-     *
-     * @return array
+     * Obtener órdenes del usuario
      */
-    private function getCurrentCart()
+    public function index(): JsonResponse
     {
-        if (Auth::check()) {
-            // Para usuarios autenticados se podría obtener de la base de datos
-            // Implementar lógica real aquí
-            return Session::get('cart', []);
-        } else {
-            return Session::get('cart', []);
+        try {
+            $user = Auth::user();
+
+            $orders = Order::with(['items.game.console'])
+                ->where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            $formattedOrders = $orders->getCollection()->map(function ($order) {
+                return $this->formatOrder($order);
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'orders' => $formattedOrders,
+                    'pagination' => [
+                        'current_page' => $orders->currentPage(),
+                        'last_page' => $orders->lastPage(),
+                        'per_page' => $orders->perPage(),
+                        'total' => $orders->total()
+                    ]
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las órdenes',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
     }
-    
+
     /**
-     * Vaciar el carrito
-     *
-     * @return void
+     * Obtener orden específica
      */
-    private function clearCart()
+    public function show($id): JsonResponse
     {
-        Session::forget('cart');
+        try {
+            $user = Auth::user();
+
+            $order = Order::with(['items.game.console', 'user'])
+                ->where('user_id', $user->id)
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'order' => $this->formatOrder($order)
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Orden no encontrada',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 404);
+        }
+    }
+
+    /**
+     * Confirmar pago de orden
+     */
+    public function confirmPayment(Request $request, $id): JsonResponse
+    {
+        try {
+            $request->validate([
+                'payment_id' => 'required|string',
+                'payment_status' => 'required|string|in:completed,failed'
+            ]);
+
+            $user = Auth::user();
+
+            $order = Order::where('user_id', $user->id)->findOrFail($id);
+
+            if ($order->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Esta orden ya fue procesada'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            // Actualizar orden
+            $order->update([
+                'payment_id' => $request->payment_id,
+                'status' => $request->payment_status === 'completed' ? 'processing' : 'cancelled'
+            ]);
+
+            // Si el pago falló, restaurar stock
+            if ($request->payment_status === 'failed') {
+                foreach ($order->items as $item) {
+                    $item->game->increment('stock', $item->quantity);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => $request->payment_status === 'completed' 
+                    ? 'Pago confirmado exitosamente' 
+                    : 'Pago falló, orden cancelada',
+                'data' => [
+                    'order' => $this->formatOrder($order->fresh(['items.game.console']))
+                ]
+            ]);
+
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Datos inválidos',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al confirmar el pago',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener datos del usuario para checkout
+     */
+    public function getCheckoutData(): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+
+            // Obtener carrito
+            $cartItems = CartItem::with(['game.console'])
+                ->forUser($user->id)
+                ->get();
+
+            if ($cartItems->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El carrito está vacío'
+                ], 400);
+            }
+
+            // Calcular totales
+            $subtotal = $cartItems->sum(function ($item) {
+                return $item->price * $item->quantity;
+            });
+
+            $shipping = 0; // Envío gratis
+            $total = $subtotal + $shipping;
+
+            // Formatear items del carrito
+            $items = $cartItems->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'game_id' => $item->game_id,
+                    'quantity' => $item->quantity,
+                    'price' => (float) $item->price,
+                    'subtotal' => (float) ($item->price * $item->quantity),
+                    'game' => [
+                        'id' => $item->game->id,
+                        'name' => $item->game->name,
+                        'image' => $item->game->image,
+                        'console' => $item->game->console->name
+                    ]
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'phone' => $user->phone,
+                        'address' => $user->address,
+                        'city' => $user->city,
+                        'postal_code' => $user->postal_code,
+                        'country' => $user->country
+                    ],
+                    'cart' => [
+                        'items' => $items,
+                        'subtotal' => round($subtotal, 2),
+                        'shipping' => $shipping,
+                        'total' => round($total, 2),
+                        'item_count' => $cartItems->sum('quantity')
+                    ]
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener datos del checkout',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
+     * Formatear orden para respuesta
+     */
+    private function formatOrder($order): array
+    {
+        $shippingAddress = json_decode($order->shipping_address, true);
+
+        return [
+            'id' => $order->id,
+            'total' => (float) $order->total,
+            'status' => $order->status,
+            'payment_method' => $order->payment_method,
+            'payment_id' => $order->payment_id,
+            'created_at' => $order->created_at->format('Y-m-d H:i:s'),
+            'shipping_address' => $shippingAddress,
+            'items' => $order->items->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'quantity' => $item->quantity,
+                    'price' => (float) $item->price,
+                    'subtotal' => (float) ($item->price * $item->quantity),
+                    'game' => [
+                        'id' => $item->game->id,
+                        'name' => $item->game->name,
+                        'image' => $item->game->image,
+                        'console' => $item->game->console->name
+                    ]
+                ];
+            })
+        ];
+    }
+
+    /**
+     * Preparar datos para el proceso de pago
+     */
+    private function preparePaymentData($order, $paymentMethod): array
+    {
+        return [
+            'order_id' => $order->id,
+            'amount' => $order->total,
+            'currency' => 'EUR',
+            'payment_method' => $paymentMethod,
+            'description' => "Orden #{$order->id} - Retro Time",
+            // Aquí se agregarán los datos específicos de Stripe/PayPal más adelante
+        ];
     }
 }

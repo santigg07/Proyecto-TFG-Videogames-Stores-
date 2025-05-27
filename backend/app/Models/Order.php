@@ -2,90 +2,85 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-    use HasFactory;
-
-    /**
-     * Los atributos que son asignables masivamente.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'user_id',
         'total',
         'status',
         'payment_method',
         'payment_id',
-        'shipping_address',
+        'shipping_address'
+    ];
+
+    protected $casts = [
+        'total' => 'decimal:2',
+        'shipping_address' => 'array'
     ];
 
     /**
-     * Los estados posibles para un pedido.
+     * Relación con el usuario
      */
-    const STATUS_PENDING = 'pending';
-    const STATUS_PROCESSING = 'processing';
-    const STATUS_COMPLETED = 'completed';
-    const STATUS_CANCELLED = 'cancelled';
-
-    /**
-     * Los métodos de pago disponibles.
-     */
-    const PAYMENT_STRIPE = 'stripe';
-    const PAYMENT_PAYPAL = 'paypal';
-
-    /**
-     * Obtener el usuario que realizó este pedido.
-     */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
     /**
-     * Obtener los ítems de este pedido.
+     * Relación con los items de la orden
      */
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
 
     /**
-     * Calcular el total del pedido basado en los ítems.
+     * Scope para órdenes completadas
      */
-    public function calculateTotal()
+    public function scopeCompleted($query)
     {
-        return $this->items->sum(function ($item) {
-            return $item->price * $item->quantity;
-        });
+        return $query->where('status', 'completed');
     }
 
     /**
-     * Comprobar si un pedido puede ser cancelado.
-     *
-     * @return bool
+     * Scope para órdenes pendientes
      */
-    public function canBeCancelled()
+    public function scopePending($query)
     {
-        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_PROCESSING]);
+        return $query->where('status', 'pending');
     }
 
     /**
-     * Scope para filtrar por estado.
+     * Calcular total de items
      */
-    public function scopeWithStatus($query, $status)
+    public function getTotalItemsAttribute(): int
     {
-        return $query->where('status', $status);
+        return $this->items->sum('quantity');
     }
 
     /**
-     * Scope para filtrar pedidos recientes.
+     * Obtener estado formateado
      */
-    public function scopeRecent($query)
+    public function getStatusTextAttribute(): string
     {
-        return $query->orderBy('created_at', 'desc');
+        return match($this->status) {
+            'pending' => 'Pendiente',
+            'processing' => 'Procesando',
+            'completed' => 'Completada',
+            'cancelled' => 'Cancelada',
+            default => 'Desconocido'
+        };
+    }
+
+    /**
+     * Verificar si la orden se puede cancelar
+     */
+    public function canBeCancelled(): bool
+    {
+        return in_array($this->status, ['pending', 'processing']);
     }
 }

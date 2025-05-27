@@ -1,4 +1,5 @@
 // src/utils/apiConfig.js
+// api para la conexión con el backend para la sección del adimn
 
 // Configuración base de la API
 export const API_CONFIG = {

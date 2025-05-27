@@ -1,6 +1,7 @@
 ---
 // src/components/products/ProductCard.astro
 import WishlistButton from '../ui/WishlistButton';
+import SimpleAddToCartButton from '../cart/AddToCartButton.jsx';
 
 const { id, title, console, consoleSlug, imageUrl, price, originalPrice, slug } = Astro.props;
 
@@ -33,40 +34,10 @@ const formattedOriginalPrice = typeof originalPrice === 'number' ? originalPrice
         ) : (
           <span class="game-price font-bold text-white">{formattedPrice} €</span>
         )}
-        <button 
-          class="add-to-cart bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
-          data-id={id}
-          data-name={title}
-          data-price={price}
-        >
-          Añadir
-        </button>
+        
+        <!-- Botón que se conecta al backend -->
+        <SimpleAddToCartButton gameId={id} client:visible />
       </div>
     </div>
   </a>
 </div>
-
-<script>
-  // Script para manejar el botón "Añadir" (el código permanece igual)
-  document.querySelectorAll('.add-to-cart').forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      
-      const id = button.getAttribute('data-id');
-      const name = button.getAttribute('data-name');
-      const price = parseFloat(button.getAttribute('data-price') || '0');
-      
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const existingItem = cart.find(item => item.id === id);
-      
-      if (existingItem) {
-        existingItem.quantity += 1;
-      } else {
-        cart.push({ id, name, price, quantity: 1 });
-      }
-      
-      localStorage.setItem('cart', JSON.stringify(cart));
-      alert(`${name} ha sido añadido al carrito.`);
-    });
-  });
-</script>

@@ -115,4 +115,32 @@ class User extends Authenticatable
         
         return implode(', ', $parts);
     }
+
+    /**
+     * Get the cart items for the user
+     */
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    // También puedes añadir estos métodos útiles:
+
+    /**
+     * Get the total items in cart
+     */
+    public function getCartItemsCountAttribute()
+    {
+        return $this->cartItems()->sum('quantity');
+    }
+
+    /**
+     * Get the cart total
+     */
+    public function getCartTotalAttribute()
+    {
+        return $this->cartItems()->with('game')->get()->sum(function ($item) {
+            return $item->price * $item->quantity;
+        });
+    }
 }

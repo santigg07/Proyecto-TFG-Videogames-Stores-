@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WishlistController;
+use App\Http\Controllers\Api\CartController; // NUEVO
 use App\Http\Controllers\Api\Admin\GameController as AdminGameController;
 use App\Http\Controllers\Api\Admin\ConsoleController as AdminConsoleController;
 use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
@@ -59,6 +60,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/wishlist/{gameId}', [WishlistController::class, 'destroy']);
     Route::get('/wishlist/check/{gameId}', [WishlistController::class, 'check']);
     Route::delete('/user/wishlist/clear', [WishlistController::class, 'clearAll']);
+
+    // NUEVAS RUTAS PARA EL CARRITO
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/add', [CartController::class, 'store']);
+    Route::put('/cart/update/{itemId}', [CartController::class, 'update']);
+    Route::delete('/cart/remove/{itemId}', [CartController::class, 'destroy']);
+    Route::delete('/cart/clear', [CartController::class, 'clear']);
+    Route::get('/cart/summary', [CartController::class, 'summary']);
     
     // Configuración de seguridad
     Route::put('/user/password', [UserController::class, 'changePassword']);

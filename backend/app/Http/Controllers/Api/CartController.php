@@ -3,252 +3,189 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Game;
 use Illuminate\Http\Request;
+use App\Models\CartItem;
+use App\Models\Game;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 
 class CartController extends Controller
 {
     /**
-     * Obtener el carrito actual
-     *
-     * @return \Illuminate\Http\Response
+     * Display the user's cart
      */
-    public function getCart()
+    public function index(): JsonResponse
     {
-        $cart = $this->getCurrentCart();
-        $cartItems = $this->getCartWithDetails($cart);
+        $user = Auth::user();
         
+        $cartItems = CartItem::with(['game.console'])
+            ->where('user_id', $user->id)
+            ->get();
+            
         return response()->json([
+            'success' => true,
             'items' => $cartItems,
-            'total' => $this->calculateTotal($cartItems)
+            'total' => $cartItems->sum(function ($item) {
+                return $item->price * $item->quantity;
+            })
         ]);
     }
-    
+
     /**
-     * Añadir un juego al carrito
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Add item to cart
      */
-    public function addToCart(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'game_id' => 'required|exists:games,id',
             'quantity' => 'required|integer|min:1'
         ]);
-        
-        $gameId = $request->game_id;
-        $quantity = $request->quantity;
-        
-        // Verificar que el juego existe y hay stock suficiente
-        $game = Game::findOrFail($gameId);
-        
-        if ($game->stock < $quantity) {
+
+        $user = Auth::user();
+        $game = Game::findOrFail($validated['game_id']);
+
+        // Verificar stock disponible
+        if ($game->stock < $validated['quantity']) {
             return response()->json([
                 'success' => false,
                 'message' => 'No hay suficiente stock disponible'
             ], 400);
         }
-        
-        $cart = $this->getCurrentCart();
-        
-        // Si el juego ya está en el carrito, actualizar cantidad
-        if (isset($cart[$gameId])) {
-            $cart[$gameId] += $quantity;
+
+        // Buscar si el item ya existe en el carrito
+        $cartItem = CartItem::where('user_id', $user->id)
+            ->where('game_id', $validated['game_id'])
+            ->first();
+
+        if ($cartItem) {
+            // Si existe, actualizar cantidad
+            $newQuantity = $cartItem->quantity + $validated['quantity'];
+            
+            if ($game->stock < $newQuantity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay suficiente stock disponible'
+                ], 400);
+            }
+            
+            $cartItem->quantity = $newQuantity;
+            $cartItem->save();
         } else {
-            $cart[$gameId] = $quantity;
+            // Si no existe, crear nuevo item
+            $cartItem = CartItem::create([
+                'user_id' => $user->id,
+                'game_id' => $validated['game_id'],
+                'quantity' => $validated['quantity'],
+                'price' => $game->sale_price ?? $game->price
+            ]);
         }
-        
-        $this->storeCart($cart);
-        
-        $cartItems = $this->getCartWithDetails($cart);
-        
+
+        // Cargar relaciones para la respuesta
+        $cartItem->load(['game.console']);
+
         return response()->json([
             'success' => true,
             'message' => 'Producto añadido al carrito',
-            'items' => $cartItems,
-            'total' => $this->calculateTotal($cartItems)
+            'item' => $cartItem
         ]);
     }
-    
+
     /**
-     * Actualizar la cantidad de un producto en el carrito
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Update cart item quantity
      */
-    public function updateCart(Request $request)
+    public function update(Request $request, int $itemId): JsonResponse
     {
-        $request->validate([
-            'game_id' => 'required|exists:games,id',
+        $validated = $request->validate([
             'quantity' => 'required|integer|min:1'
         ]);
+
+        $user = Auth::user();
         
-        $gameId = $request->game_id;
-        $quantity = $request->quantity;
-        
-        // Verificar stock
-        $game = Game::findOrFail($gameId);
-        if ($game->stock < $quantity) {
+        $cartItem = CartItem::where('user_id', $user->id)
+            ->where('id', $itemId)
+            ->firstOrFail();
+
+        $game = Game::findOrFail($cartItem->game_id);
+
+        // Verificar stock disponible
+        if ($game->stock < $validated['quantity']) {
             return response()->json([
                 'success' => false,
                 'message' => 'No hay suficiente stock disponible'
             ], 400);
         }
-        
-        $cart = $this->getCurrentCart();
-        
-        if (!isset($cart[$gameId])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Este producto no está en el carrito'
-            ], 404);
-        }
-        
-        $cart[$gameId] = $quantity;
-        $this->storeCart($cart);
-        
-        $cartItems = $this->getCartWithDetails($cart);
-        
+
+        $cartItem->quantity = $validated['quantity'];
+        $cartItem->save();
+
+        $cartItem->load(['game.console']);
+
         return response()->json([
             'success' => true,
-            'message' => 'Carrito actualizado',
-            'items' => $cartItems,
-            'total' => $this->calculateTotal($cartItems)
+            'message' => 'Cantidad actualizada',
+            'item' => $cartItem
         ]);
     }
-    
+
     /**
-     * Eliminar un producto del carrito
-     *
-     * @param  int  $id ID del juego
-     * @return \Illuminate\Http\Response
+     * Remove item from cart
      */
-    public function removeFromCart($id)
+    public function destroy(int $itemId): JsonResponse
     {
-        $cart = $this->getCurrentCart();
+        $user = Auth::user();
         
-        if (!isset($cart[$id])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Este producto no está en el carrito'
-            ], 404);
-        }
-        
-        unset($cart[$id]);
-        $this->storeCart($cart);
-        
-        $cartItems = $this->getCartWithDetails($cart);
-        
+        $cartItem = CartItem::where('user_id', $user->id)
+            ->where('id', $itemId)
+            ->firstOrFail();
+
+        $cartItem->delete();
+
         return response()->json([
             'success' => true,
-            'message' => 'Producto eliminado del carrito',
-            'items' => $cartItems,
-            'total' => $this->calculateTotal($cartItems)
+            'message' => 'Producto eliminado del carrito'
         ]);
     }
-    
+
     /**
-     * Vaciar el carrito
-     *
-     * @return \Illuminate\Http\Response
+     * Clear entire cart
      */
-    public function clearCart()
+    public function clear(): JsonResponse
     {
-        $this->storeCart([]);
+        $user = Auth::user();
         
+        CartItem::where('user_id', $user->id)->delete();
+
         return response()->json([
             'success' => true,
-            'message' => 'Carrito vaciado',
-            'items' => [],
-            'total' => 0
+            'message' => 'Carrito vaciado'
         ]);
     }
-    
+
     /**
-     * Obtener el carrito actual (de la base de datos para usuarios autenticados o de la sesión)
-     *
-     * @return array
+     * Get cart summary
      */
-    private function getCurrentCart()
+    public function summary(): JsonResponse
     {
-        if (Auth::check()) {
-            // Para usuarios autenticados podríamos obtener el carrito de la base de datos
-            // Esto requeriría una tabla 'cart_items' relacionada con 'users'
-            return []; // Implementar lógica real aquí
-        } else {
-            // Para usuarios no autenticados, usar sesión
-            return Session::get('cart', []);
-        }
-    }
-    
-    /**
-     * Guardar el carrito (en la base de datos para usuarios autenticados o en la sesión)
-     *
-     * @param  array  $cart
-     * @return void
-     */
-    private function storeCart($cart)
-    {
-        if (Auth::check()) {
-            // Para usuarios autenticados podríamos guardar el carrito en la base de datos
-            // Implementar lógica real aquí
-        } else {
-            // Para usuarios no autenticados, guardar en sesión
-            Session::put('cart', $cart);
-        }
-    }
-    
-    /**
-     * Obtener detalles completos de los productos en el carrito
-     *
-     * @param  array  $cart
-     * @return array
-     */
-    private function getCartWithDetails($cart)
-    {
-        $items = [];
+        $user = Auth::user();
         
-        foreach ($cart as $gameId => $quantity) {
-            $game = Game::with('console')->find($gameId);
-            
-            if ($game) {
-                $price = $game->sale_price ?? $game->price;
-                
-                $items[] = [
-                    'id' => $game->id,
-                    'name' => $game->name,
-                    'slug' => $game->slug,
-                    'console' => $game->console->name,
-                    'price' => $price,
-                    'regular_price' => $game->price,
-                    'quantity' => $quantity,
-                    'subtotal' => $price * $quantity,
-                    'image' => $game->image,
-                    'stock' => $game->stock
-                ];
-            }
-        }
-        
-        return $items;
-    }
-    
-    /**
-     * Calcular el total del carrito
-     *
-     * @param  array  $items
-     * @return float
-     */
-    private function calculateTotal($items)
-    {
-        $total = 0;
-        
-        foreach ($items as $item) {
-            $total += $item['subtotal'];
-        }
-        
-        return $total;
+        $cartItems = CartItem::with(['game'])
+            ->where('user_id', $user->id)
+            ->get();
+
+        $subtotal = $cartItems->sum(function ($item) {
+            return $item->price * $item->quantity;
+        });
+
+        $shipping = 0; // Envío gratis por ahora
+        $total = $subtotal + $shipping;
+
+        return response()->json([
+            'success' => true,
+            'subtotal' => $subtotal,
+            'shipping' => $shipping,
+            'total' => $total,
+            'item_count' => $cartItems->sum('quantity')
+        ]);
     }
 }

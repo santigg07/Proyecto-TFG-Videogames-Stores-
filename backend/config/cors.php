@@ -3,7 +3,8 @@
 return [
     'paths' => ['api/*','storage/*', 'sanctum/csrf-cookie'],
     // 'allowed_origins' => ['http://localhost:4321', 'http://frontend:4321'], por si falla la conexión entre backend y frontend
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:4321')],
+    //'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:4321')], es la que estaba
+    'allowed_origins' => ['http://localhost:4321', 'http://localhost:3000'],
     'allowed_methods' => ['*'],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],

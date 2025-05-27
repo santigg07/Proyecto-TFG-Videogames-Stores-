@@ -1,48 +1,45 @@
 <?php
+// app/Models/OrderItem.php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItem extends Model
 {
-    use HasFactory;
-
-    /**
-     * Los atributos que son asignables masivamente.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'order_id',
         'game_id',
         'quantity',
-        'price',
+        'price'
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:2',
+        'quantity' => 'integer'
     ];
 
     /**
-     * Obtener el pedido al que pertenece este ítem.
+     * Relación con la orden
      */
-    public function order()
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
     /**
-     * Obtener el juego asociado a este ítem de pedido.
+     * Relación con el juego
      */
-    public function game()
+    public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
     }
 
     /**
-     * Calcular el subtotal para este ítem.
-     *
-     * @return float
+     * Calcular el subtotal del item
      */
-    public function getSubtotalAttribute()
+    public function getSubtotalAttribute(): float
     {
         return $this->price * $this->quantity;
     }
