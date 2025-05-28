@@ -1,0 +1,40 @@
+---
+// src/pages/admin/orders/[id].astro
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import AdminOrderTracking from '../../../components/admin/AdminOrderTracking';
+
+const { id } = Astro.params;
+
+// Validar que el ID sea numérico
+if (!id || isNaN(Number(id))) {
+  return Astro.redirect('/admin/orders');
+}
+---
+
+<AdminLayout title="Gestionar Pedido">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6" aria-label="Breadcrumb">
+      <ol class="flex items-center space-x-2 text-sm">
+        <li>
+          <a href="/admin" class="text-gray-400 hover:text-white transition-colors">
+            Panel Admin
+          </a>
+        </li>
+        <li class="text-gray-600">/</li>
+        <li>
+          <a href="/admin/orders" class="text-gray-400 hover:text-white transition-colors">
+            Pedidos
+          </a>
+        </li>
+        <li class="text-gray-600">/</li>
+        <li class="text-white">
+          Pedido #{id}
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Admin Order Tracking Component -->
+    <AdminOrderTracking orderId={id} client:load />
+  </div>
+</AdminLayout>

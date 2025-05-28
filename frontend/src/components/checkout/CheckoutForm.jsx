@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../hooks/useCart';
+import { useUpdateUser } from '../../hooks/useUpdateUser';
+import { showToast } from '../../utils/toast';
 import OrderSummary from './OrderSummary';
 import ShippingForm from './ShippingForm';
 import PaymentMethods from './PaymentMethods';
@@ -8,7 +10,9 @@ import PaymentMethods from './PaymentMethods';
 const CheckoutForm = ({ stripePublicKey, paypalClientId }) => {
   const { user, isAuthenticated, isInitialized } = useAuth();
   const { cartItems, loading: cartLoading, getCartTotal } = useCart();
+  const { updateUserAddress } = useUpdateUser();
   const [step, setStep] = useState(1);
+  const [isEditingShipping, setIsEditingShipping] = useState(false);
   const [shippingData, setShippingData] = useState({
     address: '',
     city: '',
@@ -33,6 +37,7 @@ const CheckoutForm = ({ stripePublicKey, paypalClientId }) => {
   // Actualizar datos de envío cuando el usuario cargue
   useEffect(() => {
     if (user) {
+      const hasShippingData = user.address || user.city || user.postal_code || user.phone;
       setShippingData({
         address: user.address || '',
         city: user.city || '',
@@ -40,6 +45,8 @@ const CheckoutForm = ({ stripePublicKey, paypalClientId }) => {
         country: user.country || 'España',
         phone: user.phone || ''
       });
+      // Si no hay datos de envío, mostrar el formulario de edición automáticamente
+      setIsEditingShipping(!hasShippingData);
     }
   }, [user]);
 
@@ -75,8 +82,31 @@ const CheckoutForm = ({ stripePublicKey, paypalClientId }) => {
   const shipping = 0; // Envío gratis
   const total = subtotal + shipping;
 
-  const handleShippingSubmit = (data) => {
+  const handleShippingSubmit = async (data) => {
     setShippingData(data);
+    
+    // Si estamos editando, actualizar los datos del usuario en la base de datos
+    if (isEditingShipping) {
+      const result = await updateUserAddress({
+        address: data.address,
+        city: data.city,
+        postal_code: data.postalCode,
+        country: data.country,
+        phone: data.phone
+      });
+      
+      if (result.success) {
+        showToast('Dirección actualizada correctamente', 'success', {
+          title: 'Éxito'
+        });
+      } else {
+        showToast(result.error || 'Error al actualizar la dirección', 'error', {
+          title: 'Error'
+        });
+      }
+    }
+    
+    setIsEditingShipping(false);
     setStep(2);
   };
 
@@ -123,21 +153,25 @@ const CheckoutForm = ({ stripePublicKey, paypalClientId }) => {
             <>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Dirección de Envío</h2>
-                <button
-                  onClick={() => {/* TODO: Implement edit functionality */}}
-                  className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center"
-                >
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Editar
-                </button>
+                {!isEditingShipping && (
+                  <button
+                    onClick={() => setIsEditingShipping(true)}
+                    className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center"
+                  >
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Editar
+                  </button>
+                )}
               </div>
 
               <ShippingForm
                 initialData={shippingData}
                 onSubmit={handleShippingSubmit}
                 errors={errors}
+                isEditing={isEditingShipping}
+                onCancel={() => setIsEditingShipping(false)}
               />
             </>
           ) : (
@@ -181,7 +215,7 @@ const CheckoutForm = ({ stripePublicKey, paypalClientId }) => {
           currentStep={step}
         />
       </div>
-      </div>
+    </div>
   );
 };
 

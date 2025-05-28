@@ -13,10 +13,12 @@ use App\Http\Controllers\Api\CartController; // NUEVO
 use App\Http\Controllers\Payment\StripeController;
 use App\Http\Controllers\Payment\PayPalController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\Admin\GameController as AdminGameController;
 use App\Http\Controllers\Api\Admin\ConsoleController as AdminConsoleController;
 use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Api\ReviewController;
 use Illuminate\Support\Facades\DB;
 
 // Rutas de autenticación (públicas)
@@ -34,6 +36,7 @@ Route::get('/games', [GameController::class, 'index']);
 Route::get('/games/search', [GameController::class, 'search']);
 Route::get('/games/filter-data', [GameController::class, 'getFilterData']);
 Route::get('/games/console/{consoleSlug}', [GameController::class, 'getByConsole']);
+Route::get('/games/{gameId}/reviews', [ReviewController::class, 'index']);
 Route::get('/games/{slug}', [GameController::class, 'show']);
 
 // Webhooks de pago (sin autenticación)
@@ -45,7 +48,6 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Rutas de autenticación para usuarios logueados
     Route::get('/user', [AuthController::class, 'user']);
-    Route::post('/user/update-address', [UserController::class, 'updateAddress']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/logout-all', [AuthController::class, 'logoutAll']);
     Route::post('/refresh-token', [AuthController::class, 'refresh']);
@@ -108,6 +110,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/export', [UserController::class, 'exportData']);
     Route::delete('/user/delete', [UserController::class, 'deleteAccount']);
     Route::delete('/user/data', [UserController::class, 'deleteUserData']);
+
+    // ruta paratracking de pedidos
+    Route::put('/orders/{id}/tracking', [OrderController::class, 'updateTracking']);
+
+    // rutas de facturas para los PDF
+    Route::get('/invoices/{orderId}/download', [InvoiceController::class, 'download']);
+    Route::get('/invoices/{orderId}/view', [InvoiceController::class, 'view']);
+
+    // Reseñas
+    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::post('/reviews/{reviewId}/vote', [ReviewController::class, 'vote']);
+    Route::get('/games/{gameId}/can-review', [ReviewController::class, 'canReview']);
 });
 
 // Rutas protegidas para admin con middleware mejorado

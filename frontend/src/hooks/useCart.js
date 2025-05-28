@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { showToast } from '../utils/toast';
 
 export const useCart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -33,7 +34,10 @@ export const useCart = () => {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
         setCartItems([]);
-        window.location.href = '/login';
+        showToast('Sesión expirada. Por favor, inicia sesión nuevamente.', 'warning');
+        setTimeout(() => {
+          window.location.href = '/?showLogin=true';
+        }, 1500);
       } else {
         setError('Error al cargar el carrito');
         setCartItems([]);
@@ -51,11 +55,36 @@ export const useCart = () => {
   const addToCart = async (gameId, quantity = 1) => {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      window.location.href = '/login';
+      showToast('Debes iniciar sesión para añadir productos', 'warning', {
+        title: 'Sesión requerida'
+      });
+      setTimeout(() => {
+        window.location.href = '/?showLogin=true&redirect=' + window.location.pathname;
+      }, 1000);
       return { success: false, message: 'Debes iniciar sesión' };
     }
 
     try {
+      // Primero intentar obtener info del juego para mostrar el nombre
+      let gameName = 'Producto';
+      try {
+        const gameResponse = await fetch(`http://localhost:8000/api/games/${gameId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (gameResponse.ok) {
+          const gameData = await gameResponse.json();
+          gameName = gameData.game?.name || gameData.data?.name || 'Producto';
+        }
+      } catch (err) {
+        // Si falla obtener el nombre, continuamos con "Producto"
+        console.log('No se pudo obtener el nombre del juego');
+      }
+
+      // Añadir al carrito
       const response = await fetch('http://localhost:8000/api/cart/add', {
         method: 'POST',
         headers: {
@@ -70,6 +99,12 @@ export const useCart = () => {
       if (response.ok) {
         await fetchCart();
         
+        // Mostrar toast de éxito
+        showToast(`${gameName} añadido al carrito`, 'success', {
+          title: '¡Producto añadido!',
+          duration: 3000
+        });
+        
         // Disparar evento personalizado para actualizar otros componentes
         window.dispatchEvent(new CustomEvent('cartUpdated', { 
           detail: { items: data.items } 
@@ -78,7 +113,6 @@ export const useCart = () => {
         // Actualizar el contador del header directamente
         const cartCount = document.querySelector('.cart-count');
         if (cartCount) {
-          // Obtener el nuevo total desde la respuesta
           await fetchCart(); // Asegurarse de tener los datos actualizados
           const totalItems = getItemCount();
           cartCount.textContent = totalItems;
@@ -86,10 +120,28 @@ export const useCart = () => {
         
         return { success: true, message: 'Producto añadido al carrito' };
       } else {
+        // Manejar diferentes tipos de errores
+        if (data.message?.toLowerCase().includes('ya está en el carrito') || 
+            data.message?.toLowerCase().includes('already in cart')) {
+          showToast('Este producto ya está en tu carrito', 'info', {
+            title: 'Ya añadido'
+          });
+        } else if (data.message?.toLowerCase().includes('stock')) {
+          showToast('No hay suficiente stock disponible', 'warning', {
+            title: 'Stock limitado'
+          });
+        } else {
+          showToast(data.message || 'Error al añadir al carrito', 'error', {
+            title: 'Error'
+          });
+        }
         return { success: false, message: data.message || 'Error al añadir al carrito' };
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
+      showToast('Error de conexión. Por favor, intenta de nuevo.', 'error', {
+        title: 'Error de conexión'
+      });
       return { success: false, message: 'Error de conexión' };
     }
   };
@@ -111,10 +163,16 @@ export const useCart = () => {
 
       if (response.ok) {
         await fetchCart();
+        showToast('Cantidad actualizada', 'success', {
+          duration: 2000
+        });
         window.dispatchEvent(new CustomEvent('cartUpdated'));
+      } else {
+        showToast('Error al actualizar cantidad', 'error');
       }
     } catch (error) {
       console.error('Error updating quantity:', error);
+      showToast('Error de conexión', 'error');
     }
   };
 
@@ -132,10 +190,14 @@ export const useCart = () => {
 
       if (response.ok) {
         await fetchCart();
+        showToast('Producto eliminado del carrito', 'info');
         window.dispatchEvent(new CustomEvent('cartUpdated'));
+      } else {
+        showToast('Error al eliminar el producto', 'error');
       }
     } catch (error) {
       console.error('Error removing item:', error);
+      showToast('Error de conexión', 'error');
     }
   };
 
@@ -153,10 +215,14 @@ export const useCart = () => {
 
       if (response.ok) {
         setCartItems([]);
+        showToast('Carrito vaciado', 'info');
         window.dispatchEvent(new CustomEvent('cartUpdated'));
+      } else {
+        showToast('Error al vaciar el carrito', 'error');
       }
     } catch (error) {
       console.error('Error clearing cart:', error);
+      showToast('Error de conexión', 'error');
     }
   };
 

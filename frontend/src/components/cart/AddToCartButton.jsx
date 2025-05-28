@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useCart } from '../../hooks/useCart';
 
 const SimpleAddToCartButton = ({ gameId }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState(null);
+  const { addToCart } = useCart();
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -14,90 +15,40 @@ const SimpleAddToCartButton = ({ gameId }) => {
       e.preventDefault();
     }
     
-    // Verificar si hay token de autenticación
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      setMessage({ type: 'error', text: 'Debes iniciar sesión' });
-      setTimeout(() => setMessage(null), 3000);
-      
-      // Redirigir al login después de 1 segundo
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 1000);
-      return;
-    }
-    
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:8000/api/cart/add', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          game_id: gameId, 
-          quantity: 1 
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage({ type: 'success', text: '¡Añadido!' });
-        
-        // Disparar evento para actualizar el contador del carrito
-        window.dispatchEvent(new CustomEvent('cartUpdated'));
-        
-        // Actualizar el contador del header directamente
-        const cartCount = document.querySelector('.cart-count');
-        if (cartCount) {
-          const currentCount = parseInt(cartCount.textContent) || 0;
-          cartCount.textContent = currentCount + 1;
-        }
-      } else {
-        setMessage({ 
-          type: 'error', 
-          text: data.message || 'Error al añadir' 
-        });
-      }
+      // El hook useCart se encarga de todo, incluidos los toasts
+      await addToCart(gameId, 1);
     } catch (error) {
       console.error('Error:', error);
-      setMessage({ type: 'error', text: 'Error de conexión' });
     } finally {
       setIsLoading(false);
-      // Limpiar mensaje después de 2 segundos
-      setTimeout(() => setMessage(null), 2000);
     }
   };
 
   return (
-    <>
-      <button 
-        onClick={handleAddToCart}
-        disabled={isLoading}
-        className={`
-          bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-all
-          ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-          ${message?.type === 'success' ? 'bg-green-600 hover:bg-green-700' : ''}
-          ${message?.type === 'error' ? 'bg-orange-600 hover:bg-orange-700' : ''}
-        `}
-      >
-        {isLoading ? (
-          <span className="flex items-center">
-            <span className="animate-spin mr-1">⌛</span>
-            ...
-          </span>
-        ) : message ? (
-          <span className="flex items-center">
-            {message.type === 'success' ? '✓' : '⚠'} {message.text}
-          </span>
-        ) : (
-          'Añadir'
-        )}
-      </button>
-    </>
+    <button 
+      onClick={handleAddToCart}
+      disabled={isLoading}
+      className={`
+        bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-all
+        disabled:opacity-50 disabled:cursor-not-allowed
+        transform hover:scale-105
+      `}
+    >
+      {isLoading ? (
+        <span className="flex items-center gap-1">
+          <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>...</span>
+        </span>
+      ) : (
+        'Añadir'
+      )}
+    </button>
   );
 };
 

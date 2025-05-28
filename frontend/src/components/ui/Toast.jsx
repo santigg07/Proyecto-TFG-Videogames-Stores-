@@ -141,7 +141,7 @@ export default function Toast() {
         </div>
       ))}
 
-      <style jsx>{`
+      <style jsx="true">{`
         @keyframes slideInFromRight {
           from {
             transform: translateX(100%);

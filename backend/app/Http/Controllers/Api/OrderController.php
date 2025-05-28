@@ -12,20 +12,72 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
     /**
      * Mostrar un listado de los pedidos del usuario.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
         $user = Auth::user();
+        Log::info('OrderController index called', [
+            'user_id' => $user->id,
+            'user_role' => $user->role_id,
+            'request_all' => $request->get('all'),
+            'is_admin' => $user->role_id === 1
+        ]);
         
-        $orders = Order::with(['items.game.console'])
-            ->where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        // Si es admin y solicita todos los pedidos
+        if ($user->role_id === 1 && $request->get('all') === 'true') {
+            // Para admin, obtener TODOS los pedidos
+            $query = Order::with(['user', 'items.game.console']);
+
+            Log::info('Admin query - getting all orders');
+            
+            // Búsqueda
+            if ($request->has('search') && $request->search) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('id', 'like', "%{$search}%")
+                    ->orWhere('payment_id', 'like', "%{$search}%")
+                    ->orWhereHas('user', function($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                    });
+                });
+            }
+        } else {
+            // Para usuarios normales, solo sus pedidos
+            $query = Order::with(['items.game.console'])
+                ->where('user_id', $user->id);
+        }
+        
+        // Filtrar por estado si se proporciona
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+        
+        // Ordenar
+        $sortOrder = $request->get('sort', 'desc');
+        $query->orderBy('created_at', $sortOrder);
+        
+        // Paginar - aumentar a 20 por página
+        $orders = $query->paginate(20);
+        
+        // Añadir contador de artículos a cada pedido
+        $orders->getCollection()->transform(function ($order) {
+            $order->items_count = $order->items ? $order->items->sum('quantity') : 0;
+            // Si no hay usuario, crear un objeto dummy
+            if (!$order->user) {
+                $order->user = (object) [
+                    'name' => 'Usuario eliminado',
+                    'email' => 'no-email@example.com'
+                ];
+            }
+            return $order;
+        });
 
         return response()->json([
             'success' => true,
@@ -224,4 +276,55 @@ class OrderController extends Controller
             'stats' => $stats
         ]);
     }
+
+    /**
+     * Actualizar información de tracking (solo admin)
+     */
+    public function updateTracking(Request $request, $id)
+    {
+        // Verificar que el usuario sea admin
+        if (Auth::user()->role_id !== 1) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+        
+        $validated = $request->validate([
+            'tracking_number' => 'nullable|string|max:100',
+            'shipping_carrier' => 'nullable|string|max:50',
+            'shipping_status' => 'nullable|in:pending,preparing,shipped,in_transit,delivered,returned',
+            'shipping_notes' => 'nullable|string'
+        ]);
+        
+        $order = Order::find($id);
+        
+        if (!$order) {
+            return response()->json(['error' => 'Pedido no encontrado'], 404);
+        }
+        
+        // Actualizar campos
+        $order->fill($validated);
+        
+        // Si el estado cambia a shipped, actualizar shipped_at
+        if ($request->shipping_status === 'shipped' && !$order->shipped_at) {
+            $order->shipped_at = now();
+        }
+        
+        // Si el estado cambia a delivered, actualizar delivered_at
+        if ($request->shipping_status === 'delivered' && !$order->delivered_at) {
+            $order->delivered_at = now();
+        }
+        
+        $order->save();
+        
+        // Opcional: Enviar email de notificación al cliente
+        if ($request->shipping_status === 'shipped' && $order->tracking_number) {
+            // Mail::to($order->user->email)->send(new ShippingNotification($order));
+        }
+        
+        return response()->json([
+            'success' => true,
+            'order' => $order
+        ]);
+    }
+
+    
 }

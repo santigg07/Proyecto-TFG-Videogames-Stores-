@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const ShippingForm = ({ initialData, onSubmit, errors }) => {
+const ShippingForm = ({ initialData, onSubmit, errors, isEditing, onCancel }) => {
   const [formData, setFormData] = useState(initialData);
+  const [formErrors, setFormErrors] = useState({});
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -9,6 +15,14 @@ const ShippingForm = ({ initialData, onSubmit, errors }) => {
       ...prev,
       [name]: value
     }));
+    setHasChanges(true);
+    // Clear error for this field when user starts typing
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   const handleSubmit = () => {
@@ -18,25 +32,83 @@ const ShippingForm = ({ initialData, onSubmit, errors }) => {
     if (!formData.city) newErrors.city = 'La ciudad es requerida';
     if (!formData.postalCode) newErrors.postalCode = 'El código postal es requerido';
     if (!formData.phone) newErrors.phone = 'El teléfono es requerido';
+    if (!formData.country) newErrors.country = 'El país es requerido';
     
     if (Object.keys(newErrors).length === 0) {
       onSubmit(formData);
+      setFormErrors({});
+    } else {
+      setFormErrors(newErrors);
     }
   };
 
+  const handleCancel = () => {
+    setFormData(initialData);
+    setFormErrors({});
+    onCancel();
+  };
+
+  // Vista de solo lectura
+  if (!isEditing) {
+    const hasCompleteData = formData.address && formData.city && formData.postalCode && formData.phone;
+    
+    if (!hasCompleteData) {
+      return (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-yellow-800 text-sm">
+            No tienes una dirección de envío guardada. Haz clic en "Editar" para añadir una.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm text-gray-500 mb-1">Dirección:</p>
+              <p className="text-gray-900 font-medium">{formData.address}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Ciudad:</p>
+                <p className="text-gray-900">{formData.city}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Código Postal:</p>
+                <p className="text-gray-900">{formData.postalCode}</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-1">País:</p>
+                <p className="text-gray-900">{formData.country}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Teléfono:</p>
+                <p className="text-gray-900">{formData.phone}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Botón separado de la caja */}
+        <button
+          onClick={() => onSubmit(formData)}
+          className="w-full mt-6 bg-red-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-700 transition-colors duration-200"
+        >
+          Continuar al Pago
+        </button>
+      </>
+    );
+  }
+
+  // Vista de edición
   return (
     <div className="space-y-4">
-      {/* Display current shipping info */}
-      <div className="bg-gray-50 p-4 rounded-lg mb-6">
-        <p className="text-sm text-gray-600 mb-1">Dirección de envío actual:</p>
-        <div className="text-gray-900">
-          <p className="font-medium">{initialData.address || 'No especificada'}</p>
-          {initialData.city && <p>{initialData.city}, {initialData.postalCode}</p>}
-          {initialData.country && <p>{initialData.country}</p>}
-          {initialData.phone && <p>Tel: {initialData.phone}</p>}
-        </div>
-      </div>
-
       {/* Address */}
       <div>
         <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
@@ -49,12 +121,12 @@ const ShippingForm = ({ initialData, onSubmit, errors }) => {
           value={formData.address}
           onChange={handleChange}
           className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 ${
-            errors.address ? 'border-red-500' : 'border-gray-300'
+            formErrors.address ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="Calle, número, piso..."
         />
-        {errors.address && (
-          <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+        {formErrors.address && (
+          <p className="mt-1 text-sm text-red-600">{formErrors.address}</p>
         )}
       </div>
 
@@ -71,11 +143,12 @@ const ShippingForm = ({ initialData, onSubmit, errors }) => {
             value={formData.city}
             onChange={handleChange}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 ${
-              errors.city ? 'border-red-500' : 'border-gray-300'
+              formErrors.city ? 'border-red-500' : 'border-gray-300'
             }`}
+            placeholder="Madrid, Barcelona..."
           />
-          {errors.city && (
-            <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+          {formErrors.city && (
+            <p className="mt-1 text-sm text-red-600">{formErrors.city}</p>
           )}
         </div>
 
@@ -90,16 +163,17 @@ const ShippingForm = ({ initialData, onSubmit, errors }) => {
             value={formData.postalCode}
             onChange={handleChange}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 ${
-              errors.postalCode ? 'border-red-500' : 'border-gray-300'
+              formErrors.postalCode ? 'border-red-500' : 'border-gray-300'
             }`}
+            placeholder="28001"
           />
-          {errors.postalCode && (
-            <p className="mt-1 text-sm text-red-600">{errors.postalCode}</p>
+          {formErrors.postalCode && (
+            <p className="mt-1 text-sm text-red-600">{formErrors.postalCode}</p>
           )}
         </div>
       </div>
 
-      {/* Country - Cambiado a input */}
+      {/* Country */}
       <div>
         <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
           País
@@ -111,12 +185,12 @@ const ShippingForm = ({ initialData, onSubmit, errors }) => {
           value={formData.country}
           onChange={handleChange}
           className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 ${
-            errors.country ? 'border-red-500' : 'border-gray-300'
+            formErrors.country ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="España"
         />
-        {errors.country && (
-          <p className="mt-1 text-sm text-red-600">{errors.country}</p>
+        {formErrors.country && (
+          <p className="mt-1 text-sm text-red-600">{formErrors.country}</p>
         )}
       </div>
 
@@ -132,23 +206,31 @@ const ShippingForm = ({ initialData, onSubmit, errors }) => {
           value={formData.phone}
           onChange={handleChange}
           className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 ${
-            errors.phone ? 'border-red-500' : 'border-gray-300'
+            formErrors.phone ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="+34 600 000 000"
         />
-        {errors.phone && (
-          <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+        {formErrors.phone && (
+          <p className="mt-1 text-sm text-red-600">{formErrors.phone}</p>
         )}
       </div>
 
-      {/* Submit Button */}
-      <div className="pt-4">
+      {/* Submit and Cancel Buttons */}
+      <div className="pt-4 flex gap-3">
         <button
           onClick={handleSubmit}
-          className="w-full bg-red-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-700 transition-colors duration-200"
+          className="flex-1 bg-red-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-700 transition-colors duration-200"
         >
-          Continuar al Pago
+          Guardar y Continuar
         </button>
+        {onCancel && (
+          <button
+            onClick={handleCancel}
+            className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200"
+          >
+            Cancelar
+          </button>
+        )}
       </div>
     </div>
   );

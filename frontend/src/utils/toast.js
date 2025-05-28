@@ -1,4 +1,4 @@
-// src/utils/toast.js
+// toast especifico para mostrar notificaciones en el panel de administración
 
 // Función principal para mostrar toasts
 export const showToast = (message, options = {}) => {

@@ -3,6 +3,7 @@
 import MainLayout from '../../../layouts/MainLayout.astro';
 import { getBackendImageUrl } from '../../../utils/image-utils';
 import WishlistButton from '../../../components/ui/WishlistButton';
+import ProductReviews from '../../../components/products/ProductReviews';
 import "../../../styles/global.css";
 
 // Obtener parámetros de la URL
@@ -143,8 +144,11 @@ const relatedGames = gameData?.relatedGames || [];
                   client:load 
                 />
               </div>
+
             </div>
           </div>
+                        <!-- Después de la información del producto -->
+              <ProductReviews gameId={game.id} client:visible />
         </div>
         
         {relatedGames.length > 0 && (
