@@ -9,13 +9,42 @@ export default function LoginModal() {
   const { login, isLoading, error, isInitialized } = useAuth();
 
   useEffect(() => {
+    // Manejar evento personalizado
     function handleToggleModal() {
       setIsOpen(prev => !prev);
     }
 
+    // NUEVO: Detectar si hay que mostrar el modal por parámetro URL
+    function checkShowLogin() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const showLogin = urlParams.get('showLogin');
+      const redirect = urlParams.get('redirect');
+      
+      if (showLogin === 'true') {
+        setIsOpen(true);
+        
+        // Guardar redirect para después del login
+        if (redirect) {
+          sessionStorage.setItem('redirectAfterLogin', redirect);
+        }
+        
+        // Limpiar los parámetros de la URL
+        const url = new URL(window.location);
+        url.searchParams.delete('showLogin');
+        url.searchParams.delete('redirect');
+        window.history.replaceState({}, document.title, url);
+      }
+    }
+
+    // Verificar al cargar
+    checkShowLogin();
+
+    // También verificar cuando cambie la URL
+    window.addEventListener('popstate', checkShowLogin);
     document.addEventListener('toggle-login-modal', handleToggleModal);
     
     return () => {
+      window.removeEventListener('popstate', checkShowLogin);
       document.removeEventListener('toggle-login-modal', handleToggleModal);
     };
   }, []);
@@ -48,17 +77,21 @@ export default function LoginModal() {
         setEmail('');
         setPassword('');
 
-        // Manejar redirección sin recargar página
-        const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
+        // ACTUALIZADO: Manejar redirección
+        const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
         if (redirectUrl) {
+          sessionStorage.removeItem('redirectAfterLogin');
+          // Usar location.href para forzar recarga completa
           setTimeout(() => {
-            const cleanUrl = decodeURIComponent(redirectUrl);
-            window.history.pushState({}, '', cleanUrl);
-            window.dispatchEvent(new PopStateEvent('popstate'));
+            window.location.href = redirectUrl;
           }, 1500);
         } else {
           // Recargar componentes que dependen del estado de autenticación
           window.dispatchEvent(new CustomEvent('auth-changed'));
+          // También recargar la página para actualizar el estado
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
         }
       }
     } catch (err) {
@@ -91,7 +124,7 @@ export default function LoginModal() {
 
   return (
     <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-auto bg-black bg-opacity-50"
+      className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-auto  bg-opacity-50"
       onClick={handleOverlayClick}
     >
       {/* Modal con mejor contraste y diseño */}

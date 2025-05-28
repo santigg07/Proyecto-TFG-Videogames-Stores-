@@ -1,0 +1,18 @@
+---
+// src/pages/admin/orders/index.astro
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import AdminOrdersList from '../../../components/admin/AdminOrdersList';
+---
+
+<AdminLayout title="Gestión de Pedidos">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-white">Gestión de Pedidos</h1>
+      <p class="text-gray-400 mt-1">Administra todos los pedidos de la tienda</p>
+    </div>
+
+    <!-- Orders List Component -->
+    <AdminOrdersList client:load />
+  </div>
+</AdminLayout>

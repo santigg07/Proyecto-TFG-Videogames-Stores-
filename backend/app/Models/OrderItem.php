@@ -1,4 +1,5 @@
 <?php
+// backend/app/Models/OrderItem.php
 
 namespace App\Models;
 
@@ -9,20 +10,20 @@ class OrderItem extends Model
 {
     use HasFactory;
 
-    /**
-     * Los atributos que son asignables masivamente.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'order_id',
         'game_id',
         'quantity',
-        'price',
+        'price'
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:2',
+        'quantity' => 'integer'
     ];
 
     /**
-     * Obtener el pedido al que pertenece este ítem.
+     * Obtener la orden que posee el artículo.
      */
     public function order()
     {
@@ -30,7 +31,7 @@ class OrderItem extends Model
     }
 
     /**
-     * Obtener el juego asociado a este ítem de pedido.
+     * Obtener la orden propietaria del artículo.
      */
     public function game()
     {
@@ -38,9 +39,7 @@ class OrderItem extends Model
     }
 
     /**
-     * Calcular el subtotal para este ítem.
-     *
-     * @return float
+     * Obtener el subtotal de este artículo
      */
     public function getSubtotalAttribute()
     {

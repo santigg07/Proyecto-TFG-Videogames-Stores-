@@ -9,10 +9,16 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WishlistController;
+use App\Http\Controllers\Api\CartController; // NUEVO
+use App\Http\Controllers\Payment\StripeController;
+use App\Http\Controllers\Payment\PayPalController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\Admin\GameController as AdminGameController;
 use App\Http\Controllers\Api\Admin\ConsoleController as AdminConsoleController;
 use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Api\ReviewController;
 use Illuminate\Support\Facades\DB;
 
 // Rutas de autenticación (públicas)
@@ -30,7 +36,12 @@ Route::get('/games', [GameController::class, 'index']);
 Route::get('/games/search', [GameController::class, 'search']);
 Route::get('/games/filter-data', [GameController::class, 'getFilterData']);
 Route::get('/games/console/{consoleSlug}', [GameController::class, 'getByConsole']);
+Route::get('/games/{gameId}/reviews', [ReviewController::class, 'index']);
 Route::get('/games/{slug}', [GameController::class, 'show']);
+
+// Webhooks de pago (sin autenticación)
+Route::post('/webhooks/stripe', [StripeController::class, 'handleWebhook']);
+Route::post('/webhooks/paypal', [PayPalController::class, 'handleWebhook']);
 
 // Rutas protegidas que requieren autenticación
 Route::middleware('auth:sanctum')->group(function () {
@@ -45,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Información del usuario
     Route::get('/user/profile', [UserController::class, 'profile']);
     Route::put('/user/profile', [UserController::class, 'updateProfile']);
+    Route::post('/user/update-address', [UserController::class, 'updateAddress']);
     
     // Estadísticas y actividad del usuario
     Route::get('/user/stats', [UserController::class, 'stats']);
@@ -59,6 +71,32 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/wishlist/{gameId}', [WishlistController::class, 'destroy']);
     Route::get('/wishlist/check/{gameId}', [WishlistController::class, 'check']);
     Route::delete('/user/wishlist/clear', [WishlistController::class, 'clearAll']);
+
+    // NUEVAS RUTAS PARA EL CARRITO
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/add', [CartController::class, 'store']);
+    Route::put('/cart/update/{itemId}', [CartController::class, 'update']);
+    Route::delete('/cart/remove/{itemId}', [CartController::class, 'destroy']);
+    Route::delete('/cart/clear', [CartController::class, 'clear']);
+    Route::get('/cart/summary', [CartController::class, 'summary']);
+
+    // Órdenes
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::post('/orders/create', [OrderController::class, 'create']);
+    Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+    
+    // Pagos - Stripe
+    Route::prefix('payment/stripe')->group(function () {
+        Route::post('/create-intent', [StripeController::class, 'createPaymentIntent']);
+        Route::post('/verify', [StripeController::class, 'verifyPayment']);
+    });
+    
+    // Pagos - PayPal
+    Route::prefix('payment/paypal')->group(function () {
+        Route::post('/create-order', [PayPalController::class, 'createOrder']);
+        Route::post('/capture-order', [PayPalController::class, 'captureOrder']);
+    });
     
     // Configuración de seguridad
     Route::put('/user/password', [UserController::class, 'changePassword']);
@@ -72,6 +110,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/export', [UserController::class, 'exportData']);
     Route::delete('/user/delete', [UserController::class, 'deleteAccount']);
     Route::delete('/user/data', [UserController::class, 'deleteUserData']);
+
+    // ruta paratracking de pedidos
+    Route::put('/orders/{id}/tracking', [OrderController::class, 'updateTracking']);
+
+    // rutas de facturas para los PDF
+    Route::get('/invoices/{orderId}/download', [InvoiceController::class, 'download']);
+    Route::get('/invoices/{orderId}/view', [InvoiceController::class, 'view']);
+
+    // Reseñas
+    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::post('/reviews/{reviewId}/vote', [ReviewController::class, 'vote']);
+    Route::get('/games/{gameId}/can-review', [ReviewController::class, 'canReview']);
 });
 
 // Rutas protegidas para admin con middleware mejorado

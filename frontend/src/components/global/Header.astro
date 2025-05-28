@@ -1,13 +1,15 @@
 ---
 // Header.astro
 import LoginModal from '../auth/LoginModal.jsx';
+import CartDropdown from '../../components/cart/CartDropdown.jsx';
 ---
 
-<header class="bg-[#a32b26] py-4 shadow-sm">
+<header class="bg-[#a32b26] py-4 shadow-sm relative">
   <div class="w-[95%] max-w-[1400px] mx-auto">
     <div class="flex flex-wrap md:flex-nowrap items-center justify-between">
       <div class="logo order-1 md:order-none mb-2.5 md:mb-0">
-        <a href="/" class="text-white text-2xl font-bold no-underline">Retro Time</a>
+        <img src="/assets/images/Retro-Time-02.png" alt="Logo Retro Time" class="h-10 md:h-20">
+        <!--<a href="/" class="text-white text-2xl font-bold no-underline">Retro Time</a>-->
       </div>
       
       <div class="search-bar order-3 md:order-none w-full md:flex-1 md:max-w-[500px] mt-2.5 md:mt-0 md:mx-5">
@@ -26,50 +28,27 @@ import LoginModal from '../auth/LoginModal.jsx';
       </div>
       
       <div class="header-actions order-2 md:order-none flex items-center">
-        <a href="/cart" class="cart-icon relative text-xl text-white mr-5 no-underline" title="Carrito">
-          <i class="fas fa-shopping-cart"></i>
-          <span class="cart-count absolute -top-2 -right-2 bg-[#ffcc00] text-black text-xs font-bold w-[18px] h-[18px] flex items-center justify-center rounded-full">0</span>
-        </a>
+        <!-- CartDropdown ya incluye su propio botón -->
+        <CartDropdown client:load />
         
-        <!-- Cambiamos el enlace por un botón para activar el modal -->
-        <button id="login-button" class="login-button bg-black/20 text-white px-4 py-2 rounded no-underline font-medium transition-colors duration-200 border-none cursor-pointer text-base hover:bg-black/30">
+        <button id="login-button" class="login-button bg-black/20 text-white px-4 py-2 rounded no-underline font-medium transition-colors duration-200 border-none cursor-pointer text-base hover:bg-black/30 ml-4">
           Iniciar sesión
         </button>
       </div>
     </div>
   </div>
   
-  <!-- Usamos el componente React directamente -->
   <LoginModal client:load />
 </header>
 
 <script>
-  // Código existente de búsqueda y carrito
   document.addEventListener('DOMContentLoaded', () => {
-    // Actualizar el contador del carrito
-    const cartCountElement = document.querySelector('.cart-count');
-    if (cartCountElement) {
-      const updateCartCount = () => {
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        const itemCount = cart.reduce((total, item) => total + (item.quantity || 1), 0);
-        cartCountElement.textContent = itemCount.toString();
-      };
-      updateCartCount();
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'cart') updateCartCount();
-      });
-      document.addEventListener('cartUpdated', updateCartCount);
-    }
-    
     // Configurar el botón de login para activar el modal
     const loginButton = document.getElementById('login-button');
     if (loginButton) {
       loginButton.addEventListener('click', () => {
-        // Disparar evento para abrir el modal
         document.dispatchEvent(new CustomEvent('toggle-login-modal'));
       });
     }
   });
-
-  
 </script>

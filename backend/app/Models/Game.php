@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Game extends Model
 {
     use HasFactory;
-
-   
-
+      
     protected $fillable = [
         'console_id',
         'name',
@@ -24,6 +22,13 @@ class Game extends Model
         'manufacturer',
         'includes',
         'image'
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:2',
+        'sale_price' => 'decimal:2',
+        'stock' => 'integer',
+        'release_year' => 'integer'
     ];
 
     /**
@@ -59,18 +64,66 @@ class Game extends Model
     }
 
     /**
+     * NUEVA RELACIÓN: Obtener los items del carrito para este juego
+     */
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    /**
+     * NUEVA RELACIÓN: Obtener los items de wishlist para este juego
+     */
+    public function wishlistItems()
+    {
+        return $this->hasMany(WishlistItem::class);
+    }
+
+    /**
+     * NUEVA RELACIÓN: Obtener los items de pedidos para este juego
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
      * Obtener el precio final (teniendo en cuenta descuentos).
      */
     public function getFinalPriceAttribute()
     {
         return $this->sale_price ?? $this->price;
     }
-    
+
+    /**
+     * NUEVO ATRIBUTO: Obtener el precio actual (alias de final_price)
+     */
+    public function getCurrentPriceAttribute()
+    {
+        return $this->final_price;
+    }
+     
     /**
      * Verificar si el juego tiene descuento.
      */
     public function getHasDiscountAttribute()
     {
         return !is_null($this->sale_price) && $this->sale_price < $this->price;
+    }
+
+    /**
+     * NUEVO ATRIBUTO: Verificar si el juego está en stock
+     */
+    public function getInStockAttribute()
+    {
+        return $this->stock > 0;
+    }
+
+    /**
+     * NUEVO ATRIBUTO: Verificar si está en oferta
+     */
+    public function getIsOnSaleAttribute()
+    {
+        return $this->has_discount;
     }
 }

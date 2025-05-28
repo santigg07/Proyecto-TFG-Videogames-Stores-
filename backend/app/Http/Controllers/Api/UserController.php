@@ -410,4 +410,49 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Datos personales eliminados correctamente']);
     }
+
+    /**
+     * Obtener información de la cuenta del usuario dirección del usuario (específico para checkout)
+    */
+    public function updateAddress(Request $request)
+    {
+        $user = Auth::user();
+        
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'phone' => 'sometimes|string|max:20',
+            'address' => 'sometimes|string|max:500',
+            'city' => 'sometimes|string|max:100', 
+            'postal_code' => 'sometimes|string|max:20',
+            'country' => 'sometimes|string|max:100',
+        ]);
+
+        // Actualizar solo los campos enviados
+        foreach ($validated as $key => $value) {
+            if ($value !== null) {
+                $user->$key = $value;
+            }
+        }
+
+        // Asegurarse de que $user es una instancia de User antes de guardar
+        if ($user instanceof User) {
+            $user->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Dirección actualizada correctamente',
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'address' => $user->address,
+                'city' => $user->city,
+                'postal_code' => $user->postal_code,
+                'country' => $user->country,
+            ]
+        ]);
+    }
+
+    
 }

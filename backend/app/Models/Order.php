@@ -1,4 +1,5 @@
 <?php
+// backend/app/Models/Order.php
 
 namespace App\Models;
 
@@ -9,11 +10,6 @@ class Order extends Model
 {
     use HasFactory;
 
-    /**
-     * Los atributos que son asignables masivamente.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'user_id',
         'total',
@@ -21,24 +17,25 @@ class Order extends Model
         'payment_method',
         'payment_id',
         'shipping_address',
+        'tracking_number',
+        'shipping_carrier',
+        'shipping_status',
+        'shipped_at',
+        'delivered_at',
+        'shipping_notes'
+    ];
+
+    protected $casts = [
+        'total' => 'decimal:2',
+        'shipping_address' => 'array',
+        'shipped_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
     /**
-     * Los estados posibles para un pedido.
-     */
-    const STATUS_PENDING = 'pending';
-    const STATUS_PROCESSING = 'processing';
-    const STATUS_COMPLETED = 'completed';
-    const STATUS_CANCELLED = 'cancelled';
-
-    /**
-     * Los métodos de pago disponibles.
-     */
-    const PAYMENT_STRIPE = 'stripe';
-    const PAYMENT_PAYPAL = 'paypal';
-
-    /**
-     * Obtener el usuario que realizó este pedido.
+     * Obtener el usuario propietario del pedido.
      */
     public function user()
     {
@@ -46,7 +43,7 @@ class Order extends Model
     }
 
     /**
-     * Obtener los ítems de este pedido.
+     * Obtener los artículos para el pedido.
      */
     public function items()
     {
@@ -54,38 +51,61 @@ class Order extends Model
     }
 
     /**
-     * Calcular el total del pedido basado en los ítems.
+     * Obtiene los artículos del pedido (alias por compatibilidad).
      */
-    public function calculateTotal()
+    public function orderItems()
     {
-        return $this->items->sum(function ($item) {
-            return $item->price * $item->quantity;
-        });
+        return $this->hasMany(OrderItem::class);
     }
 
     /**
-     * Comprobar si un pedido puede ser cancelado.
-     *
-     * @return bool
+     * Obtener estado formateado
      */
-    public function canBeCancelled()
+    public function getFormattedStatusAttribute()
     {
-        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_PROCESSING]);
+        $statuses = [
+            'pending' => 'Pendiente',
+            'processing' => 'Procesando',
+            'completed' => 'Completado',
+            'cancelled' => 'Cancelado'
+        ];
+
+        return $statuses[$this->status] ?? $this->status;
     }
 
     /**
-     * Scope para filtrar por estado.
+     * Obtener el formato del método de pago
      */
-    public function scopeWithStatus($query, $status)
+    public function getFormattedPaymentMethodAttribute()
     {
-        return $query->where('status', $status);
+        $methods = [
+            'stripe' => 'Tarjeta de Crédito',
+            'paypal' => 'PayPal'
+        ];
+
+        return $methods[$this->payment_method] ?? $this->payment_method;
     }
 
-    /**
-     * Scope para filtrar pedidos recientes.
-     */
-    public function scopeRecent($query)
+    // Método para obtener el estado de envío formateado
+    public function getShippingStatusTextAttribute()
     {
-        return $query->orderBy('created_at', 'desc');
+        $statuses = [
+            'pending' => 'Pendiente',
+            'preparing' => 'Preparando',
+            'shipped' => 'Enviado',
+            'in_transit' => 'En tránsito',
+            'delivered' => 'Entregado',
+            'returned' => 'Devuelto'
+        ];
+        
+        return $statuses[$this->shipping_status] ?? $this->shipping_status;
     }
+
+    // Método para verificar si se puede trackear
+    public function isTrackable()
+    {
+        return $this->tracking_number && $this->shipping_carrier;
+    }
+
+    
 }
