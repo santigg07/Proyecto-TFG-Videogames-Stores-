@@ -1,0 +1,336 @@
+---
+// src/pages/shipping-returns.astro
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Envíos y Devoluciones - Retro Time">
+  <div class="min-h-[calc(100vh-200px)] py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white rounded-lg shadow-xl p-6 md:p-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <h1 class="text-4xl font-bold text-gray-900 mb-4">Envíos y Devoluciones</h1>
+          <p class="text-gray-600 text-lg">Todo lo que necesitas saber sobre nuestros envíos y política de devoluciones</p>
+          <div class="w-24 h-1 bg-red-600 mx-auto mt-4"></div>
+        </div>
+
+        <!-- Envíos -->
+        <section class="mb-12">
+          <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+            <svg class="w-8 h-8 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+            </svg>
+            Información de Envíos
+          </h2>
+
+          <!-- Tarifas de envío -->
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Tarifas de Envío</h3>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Destino
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Precio
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tiempo estimado
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      España Peninsular
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="text-sm text-gray-900">4,95€</span>
+                      <span class="text-xs text-green-600 block">Gratis +50€</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      24-72 horas
+                    </td>
+                  </tr>
+                  <tr class="bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      Baleares
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      7,95€
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      2-4 días laborables
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      Canarias
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      12,95€
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      3-5 días laborables
+                    </td>
+                  </tr>
+                  <tr class="bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      Ceuta y Melilla
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      14,95€
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      4-6 días laborables
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Proceso de envío -->
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Proceso de Envío</h3>
+            <div class="space-y-4">
+              <div class="flex items-start">
+                <span class="flex-shrink-0 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">1</span>
+                <div>
+                  <h4 class="font-semibold text-gray-900">Procesamiento del pedido</h4>
+                  <p class="text-gray-600">Tu pedido se procesa en un plazo de 24 horas laborables tras la confirmación del pago.</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <span class="flex-shrink-0 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">2</span>
+                <div>
+                  <h4 class="font-semibold text-gray-900">Preparación y embalaje</h4>
+                  <p class="text-gray-600">Embalamos cuidadosamente tu pedido para garantizar que llegue en perfecto estado.</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <span class="flex-shrink-0 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">3</span>
+                <div>
+                  <h4 class="font-semibold text-gray-900">Envío</h4>
+                  <p class="text-gray-600">Te enviamos un email con el número de seguimiento para que puedas rastrear tu pedido.</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <span class="flex-shrink-0 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">4</span>
+                <div>
+                  <h4 class="font-semibold text-gray-900">Entrega</h4>
+                  <p class="text-gray-600">El transportista realizará la entrega en la dirección indicada.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transportistas -->
+          <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                  Trabajamos con las principales empresas de transporte: <strong>Correos, SEUR, MRW</strong>. Seleccionamos el mejor transportista según tu zona para garantizar la entrega más rápida y segura.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Embalaje especial -->
+          <div class="bg-green-50 border-l-4 border-green-400 p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-green-700">
+                  <strong>Embalaje Premium:</strong> Todos nuestros productos se embalan con máximo cuidado usando plástico de burbujas y cajas reforzadas para garantizar que lleguen en perfecto estado.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Devoluciones -->
+        <section>
+          <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+            <svg class="w-8 h-8 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+            </svg>
+            Política de Devoluciones
+          </h2>
+
+          <!-- Garantía de satisfacción -->
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Garantía de Satisfacción</h3>
+            <p class="text-gray-600 mb-4">
+              En Retro Time queremos que estés completamente satisfecho con tu compra. Por eso, ofrecemos una política de devolución flexible y transparente.
+            </p>
+            <ul class="space-y-2 text-gray-600">
+              <li class="flex items-start">
+                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span><strong>14 días naturales</strong> para devolver tu pedido desde la fecha de recepción</span>
+              </li>
+              <li class="flex items-start">
+                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span><strong>Reembolso completo</strong> del importe del producto</span>
+              </li>
+              <li class="flex items-start">
+                <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span><strong>Sin preguntas</strong> - Aceptamos devoluciones por cualquier motivo</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Condiciones de devolución -->
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Condiciones de Devolución</h3>
+            <p class="text-gray-600 mb-4">Para que podamos aceptar tu devolución, el producto debe cumplir las siguientes condiciones:</p>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-900 mb-2">✅ Aceptamos devoluciones si:</h4>
+                <ul class="space-y-1 text-sm text-gray-600">
+                  <li>• El producto está en el mismo estado que se envió</li>
+                  <li>• Conserva todos sus componentes originales</li>
+                  <li>• No ha sido usado (excepto para probarlo)</li>
+                  <li>• Se devuelve con el embalaje original</li>
+                  <li>• Se solicita dentro del plazo de 14 días</li>
+                </ul>
+              </div>
+              <div class="bg-red-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-900 mb-2">❌ No aceptamos devoluciones si:</h4>
+                <ul class="space-y-1 text-sm text-gray-600">
+                  <li>• El producto ha sido modificado o dañado</li>
+                  <li>• Faltan componentes o accesorios</li>
+                  <li>• Se ha superado el plazo de 14 días</li>
+                  <li>• No se puede verificar la compra</li>
+                  <li>• El producto estaba marcado como "sin devolución"</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Proceso de devolución -->
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">¿Cómo devolver un producto?</h3>
+            <div class="space-y-4">
+              <div class="flex items-start">
+                <span class="flex-shrink-0 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">1</span>
+                <div>
+                  <h4 class="font-semibold text-gray-900">Contacta con nosotros</h4>
+                  <p class="text-gray-600">Envía un email a devoluciones@retrotime.com indicando tu número de pedido y el motivo de la devolución.</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <span class="flex-shrink-0 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">2</span>
+                <div>
+                  <h4 class="font-semibold text-gray-900">Recibe la autorización</h4>
+                  <p class="text-gray-600">Te enviaremos un email con el número de autorización de devolución (RMA) y las instrucciones.</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <span class="flex-shrink-0 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">3</span>
+                <div>
+                  <h4 class="font-semibold text-gray-900">Prepara el paquete</h4>
+                  <p class="text-gray-600">Embala el producto de forma segura e incluye el número RMA visible.</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <span class="flex-shrink-0 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">4</span>
+                <div>
+                  <h4 class="font-semibold text-gray-900">Envía el producto</h4>
+                  <p class="text-gray-600">Envía el paquete a nuestra dirección de devoluciones (los gastos de envío corren por cuenta del cliente).</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <span class="flex-shrink-0 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">5</span>
+                <div>
+                  <h4 class="font-semibold text-gray-900">Reembolso</h4>
+                  <p class="text-gray-600">Una vez recibido y verificado el producto, procesaremos el reembolso en 5-7 días laborables.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Excepciones -->
+          <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h4 class="text-sm font-semibold text-yellow-800">Casos especiales:</h4>
+                <p class="text-sm text-yellow-700 mt-1">
+                  <strong>Productos defectuosos:</strong> Si recibes un producto defectuoso o que no funciona correctamente, contacta con nosotros inmediatamente. En estos casos, nos haremos cargo de los gastos de envío de la devolución y te enviaremos un reemplazo o reembolso completo.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dirección de devoluciones -->
+          <div class="bg-gray-100 p-6 rounded-lg">
+            <h4 class="font-semibold text-gray-900 mb-2">Dirección para devoluciones:</h4>
+            <address class="text-gray-600 not-italic">
+              Retro Time - Departamento de Devoluciones<br>
+              C/ Principal, 123<br>
+              11402 Jerez de la Frontera<br>
+              Cádiz, España<br>
+              <br>
+              <strong>Email:</strong> devoluciones@retrotime.com<br>
+              <strong>Teléfono:</strong> +34 900 123 456
+            </address>
+          </div>
+        </section>
+
+        <!-- FAQ adicional -->
+        <section class="mt-12 border-t pt-8">
+          <h3 class="text-2xl font-bold text-gray-900 mb-6">Preguntas Frecuentes sobre Envíos y Devoluciones</h3>
+          <div class="space-y-6">
+            <div>
+              <h4 class="font-semibold text-gray-900 mb-2">¿Puedo cambiar la dirección de envío después de realizar el pedido?</h4>
+              <p class="text-gray-600">Si tu pedido aún no ha sido enviado, contacta con nosotros lo antes posible y haremos lo posible por cambiar la dirección.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-900 mb-2">¿Qué hago si mi pedido llega dañado?</h4>
+              <p class="text-gray-600">Toma fotografías del paquete y del producto dañado y contacta con nosotros inmediatamente. Te ofreceremos un reemplazo o reembolso completo.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-900 mb-2">¿Puedo devolver un producto si simplemente cambio de opinión?</h4>
+              <p class="text-gray-600">Sí, aceptamos devoluciones por cualquier motivo dentro de los 14 días naturales, siempre que el producto esté en su estado original.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-900 mb-2">¿Cuánto tarda el reembolso?</h4>
+              <p class="text-gray-600">Una vez recibido el producto, procesamos el reembolso en 5-7 días laborables. El tiempo que tarde en aparecer en tu cuenta depende de tu banco.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <div class="mt-12 bg-red-600 text-white p-6 rounded-lg text-center">
+            <h3 class="text-2xl font-bold mb-2">¿Tienes alguna pregunta?</h3>
+            <p class="mb-4">Nuestro equipo de atención al cliente está aquí para ayudarte</p>
+            <a href="/contact" class="inline-block bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors border border-white/20">
+                Contactar con Soporte
+            </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</MainLayout>

@@ -1,0 +1,32 @@
+---
+// src/pages/register.astro
+import MainLayout from '../layouts/MainLayout.astro';
+import RegisterForm from '../components/auth/RegisterForm';
+---
+
+<MainLayout title="Crear cuenta - Retro Time">
+  <div class="min-h-[calc(100vh-200px)] flex items-center justify-center px-5 py-10 bg-black">
+    <div class="bg-[#131b2e] border border-[#1c2840] rounded-lg w-full max-w-[800px] p-10 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+      <img src="/assets/images/Retro-Time-02.png" alt="Retro Time Logo" class="block w-[120px] h-auto mx-auto mb-5" />
+      <h1 class="text-white text-[28px] font-bold mb-2.5 text-center">Crea tu cuenta</h1>
+      <p class="text-[#999] text-center mb-[30px] text-base">
+        O <button id="login-trigger" class="text-[#a32b26] no-underline bg-transparent border-0 p-0 cursor-pointer text-base hover:underline">inicia sesión</button> si ya tienes cuenta
+      </p>
+      
+      <RegisterForm client:load />
+      
+    </div>
+  </div>
+</MainLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Trigger para abrir el modal de login
+    const loginTrigger = document.getElementById('login-trigger');
+    if (loginTrigger) {
+      loginTrigger.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('open-login-modal'));
+      });
+    }
+  });
+</script>

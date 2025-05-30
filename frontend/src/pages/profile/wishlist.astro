@@ -1,0 +1,184 @@
+---
+// src/pages/profile/wishlist.astro
+import ProtectedLayout from '../../layouts/ProtectedLayout.astro';
+import WishlistGrid from '../../components/profile/WishlistGrid';
+import ModalHandler from '../../components/ui/ModalHandler';
+import Toast from '../../components/ui/Toast';
+---
+
+<ProtectedLayout title="Lista de Deseos">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header con el mismo estilo que Mis Pedidos y Mi Perfil -->
+    <div class="bg-gray-800 rounded-lg p-6 mb-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-white">Mi Lista de Deseos</h1>
+          <p class="text-gray-400 mt-1">Guarda tus juegos favoritos para comprarlos más tarde</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button 
+            id="clear-wishlist-btn" 
+            class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center"
+          >
+            <i class="fas fa-trash mr-2"></i>
+            <span class="hidden sm:inline">Limpiar Lista</span>
+            <span class="sm:hidden">Limpiar</span>
+          </button>
+          <button 
+            id="add-all-to-cart-btn" 
+            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center"
+          >
+            <i class="fas fa-shopping-cart mr-2"></i>
+            <span class="hidden sm:inline">Añadir Todo al Carrito</span>
+            <span class="sm:hidden">Al Carrito</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenedor principal -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <!-- Grid de productos en lista de deseos (React) -->
+      <WishlistGrid client:load />
+    </div>
+  </div>
+
+  <!-- Modal de confirmación -->
+  <ModalHandler client:load />
+  
+  <!-- Sistema de toasts -->
+  <Toast client:load />
+</ProtectedLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const clearWishlistBtn = document.getElementById('clear-wishlist-btn');
+    const addAllToCartBtn = document.getElementById('add-all-to-cart-btn');
+
+    // Limpiar lista de deseos con modal
+    if (clearWishlistBtn) {
+      clearWishlistBtn.addEventListener('click', () => {
+        // Mostrar modal de confirmación
+        document.dispatchEvent(new CustomEvent('show-modal', {
+          detail: {
+            title: 'Limpiar Lista de Deseos',
+            message: '¿Estás seguro de que quieres eliminar todos los juegos de tu lista de deseos? Esta acción no se puede deshacer.',
+            confirmText: 'Eliminar Todo',
+            cancelText: 'Cancelar',
+            type: 'danger',
+            onConfirm: async () => {
+              try {
+                // Mostrar toast de procesando
+                document.dispatchEvent(new CustomEvent('show-toast', {
+                  detail: {
+                    message: 'Eliminando juegos de la lista...',
+                    type: 'info',
+                    duration: 2000
+                  }
+                }));
+
+                const token = localStorage.getItem('auth_token');
+                
+                const response = await fetch('http://localhost:8000/api/user/wishlist/clear', {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                  }
+                });
+                         
+                if (response.ok) {
+                  // Notificar a los componentes que se limpio la lista
+                  document.dispatchEvent(new CustomEvent('wishlistCleared'));
+                  
+                  // Mostrar toast de éxito
+                  document.dispatchEvent(new CustomEvent('show-toast', {
+                    detail: {
+                      title: '¡Lista limpiada!',
+                      message: 'Todos los juegos han sido eliminados de tu lista de deseos.',
+                      type: 'success',
+                      duration: 4000
+                    }
+                  }));
+                } else {
+                  throw new Error('Error del servidor');
+                }
+              } catch (error) {
+                console.error('Error clearing wishlist:', error);
+                
+                // Mostrar toast de error
+                document.dispatchEvent(new CustomEvent('show-toast', {
+                  detail: {
+                    title: 'Error al limpiar',
+                    message: 'No se pudo limpiar la lista de deseos. Inténtalo de nuevo.',
+                    type: 'error',
+                    duration: 5000
+                  }
+                }));
+              }
+            },
+            onCancel: () => {
+              // Esta función se ejecutará cuando se cancele el modal
+              console.log('Modal cancelado');
+            }
+          }
+        }));
+      });
+    }
+
+    // Añadir todo al carrito
+    if (addAllToCartBtn) {
+      addAllToCartBtn.addEventListener('click', () => {
+        // Verificar si hay items antes de mostrar el modal
+        const wishlistCount = document.querySelector('.text-gray-400')?.textContent;
+        
+        if (wishlistCount && wishlistCount.includes('0 juegos')) {
+          document.dispatchEvent(new CustomEvent('show-toast', {
+            detail: {
+              title: 'Lista vacía',
+              message: 'No hay juegos en tu lista de deseos para añadir al carrito.',
+              type: 'warning',
+              duration: 3000
+            }
+          }));
+          return;
+        }
+
+        // Mostrar modal de confirmación
+        document.dispatchEvent(new CustomEvent('show-modal', {
+          detail: {
+            title: 'Añadir Todo al Carrito',
+            message: '¿Quieres añadir todos los juegos de tu lista de deseos al carrito de compras?',
+            confirmText: 'Añadir Todo',
+            cancelText: 'Cancelar',
+            type: 'default',
+            onConfirm: () => {
+              // Notificar al componente para añadir todo
+              document.dispatchEvent(new CustomEvent('addAllToCart'));
+              
+              // Mostrar toast de confirmación
+              document.dispatchEvent(new CustomEvent('show-toast', {
+                detail: {
+                  title: '¡Añadido al carrito!',
+                  message: 'Todos los juegos de tu lista de deseos han sido añadidos al carrito.',
+                  type: 'success',
+                  icon: (
+                    '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z" />' +
+                    '</svg>'
+                  ),
+                  duration: 4000
+                }
+              }));
+            },
+            onCancel: () => {
+              // Esta función se ejecutará cuando se cancele el modal
+              console.log('Modal cancelado');
+            }
+          }
+        }));
+      });
+    }
+  });
+</script>

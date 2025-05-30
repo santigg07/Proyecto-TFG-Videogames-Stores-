@@ -1,0 +1,376 @@
+---
+// src/pages/games/[console]/[slug].astro
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { getBackendImageUrl } from '../../../utils/image-utils';
+import WishlistButton from '../../../components/ui/WishlistButton';
+import SimpleAddToCartButton from '../../../components/cart/AddToCartButton.jsx';
+import ProductReviews from '../../../components/products/ProductReviews';
+import "../../../styles/global.css";
+
+// Obtener parámetros de la URL
+const { console: consoleSlug, slug } = Astro.params;
+
+// Variables para almacenar datos
+interface GameData {
+  game?: {
+    id: string | number;
+    name: string;
+    image?: string;
+    images?: string[]; // Array de imágenes adicionales
+    description?: string;
+    price: number;
+    sale_price?: number;
+    stock: number;
+    manufacturer?: string;
+    release_year?: number;
+    condition?: string;
+    includes?: string;
+  };
+  relatedGames?: Array<{
+    id: string | number;
+    name: string;
+    slug: string;
+    image?: string;
+    price: number;
+    sale_price?: number;
+    console?: {
+      slug: string;
+      name: string;
+    };
+  }>;
+}
+
+interface ConsoleData {
+  id: string | number;
+  name: string;
+  slug: string;
+  manufacturer?: string;
+  image?: string;
+}
+
+let gameData: GameData | null = null;
+let consoleData: ConsoleData | null = null;
+let error: string | null = null;
+
+const API_URL = 'http://backend:8000/api';
+
+try {
+  // Obtener datos del juego directamente
+  const gameResponse = await fetch(`${API_URL}/games/${slug}`);
+  
+  if (gameResponse.ok) {
+    gameData = await gameResponse.json();
+    
+    // Obtener datos de la consola
+    const consoleResponse = await fetch(`${API_URL}/consoles/${consoleSlug}`);
+    
+    if (consoleResponse.ok) {
+      consoleData = await consoleResponse.json();
+    } else {
+      error = `Error al cargar la consola: ${consoleResponse.status}`;
+    }
+  } else {
+    error = `Error al cargar el juego: ${gameResponse.status}`;
+  }
+} catch (err: any) {
+  error = `Error de conexión: ${err.message}`;
+}
+
+// Extraer datos del juego y juegos relacionados de forma segura
+const game = gameData?.game || null;
+const relatedGames = gameData?.relatedGames || [];
+
+// Obtener todas las imágenes del juego
+const gameImages = game?.images || [];
+
+// Debug: Ver qué imágenes estamos recibiendo
+console.log('Imágenes recibidas:', {
+  principal: game?.image,
+  adicionales: gameImages,
+  total: gameImages.length
+});
+
+// Si el array está vacío pero hay imagen principal, usarla
+if (gameImages.length === 0 && game?.image) {
+  gameImages.push(game.image);
+}
+---
+
+<MainLayout title={game ? `${game.name} - Retro Time` : "Detalle del juego"}>
+  <div class="container mx-auto px-4 py-6">
+    {error ? (
+      <div class="bg-red-900/20 border border-red-800 text-red-400 p-4 rounded">
+        <h2 class="text-xl font-bold mb-2">Error</h2>
+        <p>{error}</p>
+      </div>
+    ) : game ? (
+      <>
+        <!-- Breadcrumb -->
+        <div class="mb-4 text-sm">
+          <a href="/" class="text-gray-400 hover:text-white">Inicio</a>
+          <span class="text-gray-600 mx-2">/</span>
+          <a href="/games" class="text-gray-400 hover:text-white">Juegos</a>
+          <span class="text-gray-600 mx-2">/</span>
+          <a href={`/games/${consoleSlug}`} class="text-gray-400 hover:text-white">
+            {consoleData?.name || "Consola"}
+          </a>
+          <span class="text-gray-600 mx-2">/</span>
+          <span class="text-gray-300">{game.name}</span>
+        </div>
+
+        <!-- Sección principal del producto -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
+          <!-- Columna de imágenes -->
+          <div class="lg:col-span-5">
+            <div class="bg-gray-800 rounded-lg p-4">
+              <!-- Imagen principal -->
+              <div class="mb-4">
+                <img 
+                  id="main-image"
+                  src={getBackendImageUrl(game.image)} 
+                  alt={game.name}
+                  class="w-full rounded-lg"
+                />
+              </div>
+              
+              <!-- Miniaturas -->
+              {gameImages.length > 1 && (
+                <div class="grid grid-cols-4 gap-2">
+                  {gameImages.map((img, index) => (
+                    <button
+                      class="thumbnail-btn border-2 border-gray-700 rounded-lg overflow-hidden hover:border-red-600 transition-colors"
+                      data-image={getBackendImageUrl(img)}
+                    >
+                      <img 
+                        src={getBackendImageUrl(img)} 
+                        alt={`${game.name} - imagen ${index + 1}`}
+                        class="w-full h-20 object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <!-- Columna de información -->
+          <div class="lg:col-span-4">
+            <h1 class="text-3xl font-bold text-white mb-2">{game.name}</h1>
+            
+            <div class="flex items-center gap-4 mb-4">
+              <div class="text-sm text-gray-400">
+                por <span class="text-red-400">{game.manufacturer || "Desconocido"}</span>
+              </div>
+              <div class="text-sm text-gray-400">
+                Consola: <span class="text-white">{consoleData?.name}</span>
+              </div>
+            </div>
+
+            <!-- Rating placeholder -->
+            <div class="flex items-center gap-2 mb-6">
+              <div class="flex text-yellow-400">
+                <span>★★★★☆</span>
+              </div>
+              <a href="#reviews" class="text-sm text-blue-400 hover:underline">
+                Ver reseñas
+              </a>
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-6">
+              <h2 class="text-lg font-semibold text-white mb-2">Descripción</h2>
+              <p class="text-gray-300 leading-relaxed">
+                {game.description || 'No hay descripción disponible para este juego.'}
+              </p>
+            </div>
+
+            <!-- Detalles del producto -->
+            <div class="bg-gray-800 rounded-lg p-4 mb-6">
+              <h3 class="text-lg font-semibold text-white mb-3">Detalles del producto</h3>
+              <dl class="space-y-2 text-sm">
+                {game.release_year && (
+                  <div class="flex justify-between">
+                    <dt class="text-gray-400">Año de lanzamiento:</dt>
+                    <dd class="text-white">{game.release_year}</dd>
+                  </div>
+                )}
+                {game.condition && (
+                  <div class="flex justify-between">
+                    <dt class="text-gray-400">Estado:</dt>
+                    <dd class="text-white">{game.condition}</dd>
+                  </div>
+                )}
+                {game.includes && (
+                  <div class="flex justify-between">
+                    <dt class="text-gray-400">Incluye:</dt>
+                    <dd class="text-white">{game.includes}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          </div>
+
+          <!-- Columna de compra -->
+          <div class="lg:col-span-3">
+            <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 sticky top-4">
+              <!-- Precio -->
+              <div class="mb-4">
+                {game.sale_price ? (
+                  <div>
+                    <div class="flex items-baseline gap-2">
+                      <span class="text-3xl font-bold text-red-500">{game.sale_price} €</span>
+                      <span class="text-lg text-gray-500 line-through">{game.price} €</span>
+                    </div>
+                    <div class="text-sm text-green-400 mt-1">
+                      Ahorras {(game.price - game.sale_price).toFixed(2)} € ({Math.round((1 - game.sale_price / game.price) * 100)}%)
+                    </div>
+                  </div>
+                ) : (
+                  <div class="text-3xl font-bold text-white">{game.price} €</div>
+                )}
+              </div>
+
+              <!-- Stock -->
+              <div class="mb-4">
+                {game.stock > 0 ? (
+                  <p class="text-green-400 font-semibold">En stock</p>
+                ) : (
+                  <p class="text-red-400 font-semibold">Sin stock</p>
+                )}
+                {game.stock > 0 && game.stock <= 5 && (
+                  <p class="text-yellow-400 text-sm">¡Solo quedan {game.stock} unidades!</p>
+                )}
+              </div>
+
+              <!-- Cantidad -->
+              {game.stock > 0 && (
+                <div class="mb-4">
+                  <label class="block text-sm text-gray-400 mb-1">Cantidad:</label>
+                  <select class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white">
+                    {Array.from({ length: Math.min(game.stock, 10) }, (_, i) => (
+                      <option value={i + 1}>{i + 1}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <!-- Botones de acción -->
+              <div class="space-y-3">
+                <SimpleAddToCartButton 
+                  gameId={game.id} 
+                  client:load 
+                />
+                
+                <WishlistButton 
+                  gameId={game.id} 
+                  size="lg" 
+                  showText={true}
+                  client:load 
+                />
+              </div>
+
+              <!-- Envío -->
+              <div class="mt-6 pt-6 border-t border-gray-700">
+                <div class="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                  </svg>
+                  <span>Envío en 24-48 horas</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-gray-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Producto verificado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Juegos relacionados (estilo "Comprados juntos habitualmente") -->
+        {relatedGames.length > 0 && (
+          <section class="mb-12">
+            <div class="bg-gray-800 rounded-lg p-6">
+              <h2 class="text-2xl font-bold text-white mb-6">Comprados juntos habitualmente</h2>
+              
+              <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {relatedGames.slice(0, 6).map(relGame => (
+                  <div class="bg-gray-900 rounded-lg overflow-hidden hover:ring-2 hover:ring-red-600 transition-all">
+                    <a href={`/games/${relGame.console?.slug || consoleSlug}/${relGame.slug}`} class="block">
+                      <div class="aspect-square bg-gray-800 p-2">
+                        <img 
+                          src={getBackendImageUrl(relGame.image)} 
+                          alt={relGame.name}
+                          class="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div class="p-3">
+                        <h3 class="text-sm font-medium text-white mb-1 line-clamp-2">{relGame.name}</h3>
+                        <p class="text-lg font-bold text-red-500">
+                          {relGame.sale_price || relGame.price} €
+                        </p>
+                      </div>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <!-- Sección de reseñas -->
+        <section id="reviews" class="mb-12">
+          <ProductReviews gameId={game.id} client:visible />
+        </section>
+      </>
+    ) : (
+      <div class="flex justify-center items-center min-h-[400px]">
+        <div class="text-center">
+          <div class="animate-spin h-12 w-12 border-4 border-red-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p class="text-xl text-gray-400">Cargando información del juego...</p>
+        </div>
+      </div>
+    )}
+  </div>
+</MainLayout>
+
+<script>
+  // Script para cambiar la imagen principal
+  document.addEventListener('DOMContentLoaded', () => {
+    const mainImage = document.getElementById('main-image') as HTMLImageElement;
+    const thumbnailButtons = document.querySelectorAll('.thumbnail-btn');
+    
+    thumbnailButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const newImage = button.getAttribute('data-image');
+        if (mainImage && newImage) {
+          mainImage.src = newImage;
+          
+          // Actualizar estilos de las miniaturas
+          thumbnailButtons.forEach(btn => {
+            btn.classList.remove('border-red-600');
+            btn.classList.add('border-gray-700');
+          });
+          button.classList.remove('border-gray-700');
+          button.classList.add('border-red-600');
+        }
+      });
+    });
+    
+    // Marcar la primera miniatura como activa
+    if (thumbnailButtons.length > 0) {
+      thumbnailButtons[0].classList.remove('border-gray-700');
+      thumbnailButtons[0].classList.add('border-red-600');
+    }
+  });
+</script>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

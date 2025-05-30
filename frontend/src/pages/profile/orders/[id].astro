@@ -1,0 +1,49 @@
+---
+// src/pages/profile/orders/[id].astro
+import ProtectedLayout from '../../../layouts/ProtectedLayout.astro';
+import OrderDetail from '../../../components/profile/OrderDetail';
+
+const { id } = Astro.params;
+
+// Validar que el ID sea numérico
+if (!id || isNaN(Number(id))) {
+  return Astro.redirect('/profile/orders');
+}
+---
+
+<ProtectedLayout title="Detalle del Pedido">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6" aria-label="Breadcrumb">
+      <ol class="flex items-center space-x-2 text-sm">
+        <li>
+          <a href="/profile" class="text-gray-400 hover:text-white transition-colors">
+            Mi Cuenta
+          </a>
+        </li>
+        <li class="text-gray-600">/</li>
+        <li>
+          <a href="/profile/orders" class="text-gray-400 hover:text-white transition-colors">
+            Mis Pedidos
+          </a>
+        </li>
+        <li class="text-gray-600">/</li>
+        <li class="text-white">
+          Pedido #{id}
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Order Detail Component -->
+    <OrderDetail orderId={id} client:load />
+  </div>
+</ProtectedLayout>
+
+<style>
+  /* Estilos para impresión */
+  @media print {
+    nav {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,299 @@
+---
+// src/components/catalog/FilterSidebar.astro
+interface Console {
+  id: number;
+  name: string;
+  slug: string;
+  manufacturer?: string;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+interface Props {
+  consolesList: Console[];
+  categoriesList: Category[];
+  filterData: {
+    priceRange: { min: number; max: number };
+    conditions: string[];
+    releaseYears: number[];
+  } | null;
+  selectedFilters: {
+    consoleId: string | null;
+    categoryId: string | null;
+    minPrice: string | null;
+    maxPrice: string | null;
+    condition: string | null;
+    inStock: boolean | null | undefined;
+    releaseYear: string | null;
+  };
+  createUrl: (params: Record<string, any>) => string;
+}
+
+const { 
+  consolesList, 
+  categoriesList, 
+  filterData, 
+  selectedFilters, 
+  createUrl 
+} = Astro.props;
+
+// Determinar los valores de rango de precios
+const priceMin = filterData?.priceRange?.min || 0;
+const priceMax = filterData?.priceRange?.max || 1000;
+const selectedMinPrice = selectedFilters.minPrice ? parseInt(selectedFilters.minPrice) : priceMin;
+const selectedMaxPrice = selectedFilters.maxPrice ? parseInt(selectedFilters.maxPrice) : priceMax;
+
+// Obtener años disponibles
+const releaseYears = filterData?.releaseYears || [];
+
+// Condiciones disponibles
+const conditions = filterData?.conditions || ['Nuevo', 'Usado - Buen estado', 'Usado - Aceptable', 'Coleccionista'];
+---
+
+<div class="bg-gray-800 rounded-lg p-5 sticky top-6">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-xl font-bold">Filtros</h2>
+    <button class="text-sm text-gray-400 hover:text-white">
+      <a href="/catalog">Limpiar filtros</a>
+    </button>
+  </div>
+  
+  <form id="filter-form" method="get" action="/catalog">
+    <!-- Filtro por Consola -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3">Consolas</h3>
+      <div class="space-y-2 max-h-48 overflow-y-auto pr-2">
+        {consolesList.map(console => (
+          <div class="flex items-center">
+            <input 
+              type="radio" 
+              name="console_id" 
+              id={`console-${console.id}`} 
+              value={console.id} 
+              checked={selectedFilters.consoleId === console.id.toString()}
+              class="rounded border-gray-700 text-red-600 focus:ring-red-500 bg-gray-700"
+            />
+            <label for={`console-${console.id}`} class="ml-2 text-sm text-gray-300 cursor-pointer">
+              {console.name}
+            </label>
+          </div>
+        ))}
+      </div>
+    </div>
+    
+    <!-- Filtro por Categoría -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3">Categorías</h3>
+      <div class="space-y-2 max-h-48 overflow-y-auto pr-2">
+        {categoriesList.map(category => (
+          <div class="flex items-center">
+            <input 
+              type="radio" 
+              name="category_id" 
+              id={`category-${category.id}`} 
+              value={category.id} 
+              checked={selectedFilters.categoryId === category.id.toString()}
+              class="rounded border-gray-700 text-red-600 focus:ring-red-500 bg-gray-700"
+            />
+            <label for={`category-${category.id}`} class="ml-2 text-sm text-gray-300 cursor-pointer">
+              {category.name}
+            </label>
+          </div>
+        ))}
+      </div>
+    </div>
+    
+    <!-- Filtro por Precio -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3">Precio</h3>
+      <div class="px-2">
+        <div class="mb-4">
+          <div class="flex justify-between mb-2">
+            <span id="price-min-value" class="text-sm text-gray-400">{selectedMinPrice}€</span>
+            <span id="price-max-value" class="text-sm text-gray-400">{selectedMaxPrice}€</span>
+          </div>
+          <div class="relative h-2 bg-gray-700 rounded-full">
+            <div 
+              id="price-range-selected" 
+              class="absolute h-full bg-red-600 rounded-full"
+              style={`left: ${((selectedMinPrice - priceMin) / (priceMax - priceMin)) * 100}%; right: ${100 - ((selectedMaxPrice - priceMin) / (priceMax - priceMin)) * 100}%`}
+            ></div>
+          </div>
+        </div>
+        <div class="flex space-x-4">
+          <div class="w-1/2">
+            <label for="min_price" class="text-sm text-gray-400">Mínimo</label>
+            <input 
+              type="number" 
+              name="min_price" 
+              id="min_price" 
+              min={priceMin} 
+              max={priceMax} 
+              value={selectedMinPrice} 
+              class="w-full bg-gray-700 border-gray-600 rounded text-white text-sm p-2"
+            />
+          </div>
+          <div class="w-1/2">
+            <label for="max_price" class="text-sm text-gray-400">Máximo</label>
+            <input 
+              type="number" 
+              name="max_price" 
+              id="max_price" 
+              min={priceMin} 
+              max={priceMax} 
+              value={selectedMaxPrice} 
+              class="w-full bg-gray-700 border-gray-600 rounded text-white text-sm p-2"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Filtro por Estado (Condición) -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3">Estado</h3>
+      <div class="space-y-2">
+        {conditions.map(condition => (
+          <div class="flex items-center">
+            <input 
+              type="radio" 
+              name="condition" 
+              id={`condition-${condition}`} 
+              value={condition}
+              checked={selectedFilters.condition === condition}
+              class="rounded border-gray-700 text-red-600 focus:ring-red-500 bg-gray-700"
+            />
+            <label for={`condition-${condition}`} class="ml-2 text-sm text-gray-300 cursor-pointer">
+              {condition}
+            </label>
+          </div>
+        ))}
+      </div>
+    </div>
+    
+    <!-- Filtro por Disponibilidad -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3">Disponibilidad</h3>
+      <div class="flex items-center">
+        <input 
+          type="checkbox" 
+          name="in_stock" 
+          id="in_stock" 
+          value="1"
+          checked={selectedFilters.inStock === true}
+          class="rounded border-gray-700 text-red-600 focus:ring-red-500 bg-gray-700"
+        />
+        <label for="in_stock" class="ml-2 text-sm text-gray-300 cursor-pointer">
+          Solo productos en stock
+        </label>
+      </div>
+    </div>
+    
+    <!-- Filtro por Año de Lanzamiento -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3">Año de Lanzamiento</h3>
+      <div class="space-y-2 max-h-48 overflow-y-auto pr-2">
+        <select 
+          name="release_year" 
+          id="release_year" 
+          class="w-full bg-gray-700 border-gray-600 rounded text-white text-sm p-2"
+        >
+          <option value="">Todos los años</option>
+          {releaseYears.sort((a, b) => b - a).map(year => (
+            <option 
+              value={year}
+              selected={selectedFilters.releaseYear === year.toString()}
+            >
+              {year}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+    
+    <!-- Botón de Aplicar Filtros -->
+    <button 
+      type="submit" 
+      class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition-colors"
+    >
+      Aplicar Filtros
+    </button>
+  </form>
+</div>
+
+<script>
+  // Script para actualizar el rango de precios visualmente
+  document.addEventListener('DOMContentLoaded', () => {
+    const minPriceInput = document.getElementById('min_price') as HTMLInputElement;
+    const maxPriceInput = document.getElementById('max_price') as HTMLInputElement;
+    const minPriceValue = document.getElementById('price-min-value');
+    const maxPriceValue = document.getElementById('price-max-value');
+    const priceRangeSelected = document.getElementById('price-range-selected');
+    
+    if (minPriceInput && maxPriceInput && minPriceValue && maxPriceValue && priceRangeSelected) {
+      const minValue = parseInt(minPriceInput.getAttribute('min') || '0');
+      const maxValue = parseInt(maxPriceInput.getAttribute('max') || '1000');
+      const range = maxValue - minValue;
+      
+      const updatePriceRange = () => {
+        const min = parseInt(minPriceInput.value);
+        const max = parseInt(maxPriceInput.value);
+        
+        // Asegurar que min <= max
+        if (min > max) {
+          maxPriceInput.value = min.toString();
+        }
+        
+        // Actualizar textos
+        minPriceValue.textContent = `${min}€`;
+        maxPriceValue.textContent = `${parseInt(maxPriceInput.value)}€`;
+        
+        // Actualizar barra visual
+        const leftPercent = ((min - minValue) / range) * 100;
+        const rightPercent = 100 - ((parseInt(maxPriceInput.value) - minValue) / range) * 100;
+        priceRangeSelected.style.left = `${leftPercent}%`;
+        priceRangeSelected.style.right = `${rightPercent}%`;
+      };
+      
+      minPriceInput.addEventListener('input', updatePriceRange);
+      maxPriceInput.addEventListener('input', updatePriceRange);
+      
+      // Inicializar
+      updatePriceRange();
+    }
+    
+    // Actualizar formulario al cambiar los inputs (para filtros instantáneos)
+    const filterInputs = document.querySelectorAll('#filter-form input:not([type="text"]), #filter-form select');
+    filterInputs.forEach(input => {
+      input.addEventListener('change', () => {
+        // Si quieres activar filtrado automático, descomenta la siguiente línea
+        // document.getElementById('filter-form')?.submit();
+      });
+    });
+  });
+</script>
+
+<style>
+  /* Estilos para el scrollbar de los filtros */
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .overflow-y-auto::-webkit-scrollbar-track {
+    background: #4B5563;
+    border-radius: 2px;
+  }
+  
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #9CA3AF;
+    border-radius: 2px;
+  }
+  
+  .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #D1D5DB;
+  }
+</style>

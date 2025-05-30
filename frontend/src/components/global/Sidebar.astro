@@ -1,0 +1,654 @@
+---
+// Sidebar.astro
+import "../../styles/sidebar.css";
+import LogoutConfirmation from '../ui/LogoutConfirmation';
+---
+
+<div id="sidebar" class="sidebar fixed top-0 left-0 w-[260px] flex flex-col h-screen bg-[#151c28] text-white z-[1000]  transition-transform duration-300 shadow-md">
+  <div class="sidebar-header flex items-center justify-between p-4 border-b border-[#2a344a]">
+    <div class="logo-container flex items-center">
+      <div class="logo w-[40px] h-[30px] mr-2.5 flex items-center justify-center">
+        <img src="/assets/images/Chocobos-06.png" alt="Logo" class="max-w-full max-h-full" onerror="this.src='/assets/images/fallback-icon.png'; this.onerror=null;">
+      </div>
+      <div class="brand-name text-lg font-bold whitespace-nowrap">Retro Time</div>
+    </div>
+    <button id="sidebar-toggle" class="sidebar-toggle bg-transparent border-0 text-[#a0aec0] cursor-pointer text-sm p-1.5 flex items-center justify-center transition-colors hover:text-white">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+  </div>
+
+  <div class="sidebar-content flex-1 overflow-y-auto py-2.5">
+    <nav class="sidebar-nav mb-5">
+      <a href="/" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-home text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Inicio</span>
+      </a>
+      <a href="/catalog" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Catálogo</span>
+      </a>
+      <a href="/cart" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-shopping-cart text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Carrito</span>
+      </a>
+    </nav>
+
+    <div class="section-header flex items-center justify-between px-4 py-2.5 text-[#64748b] text-xs font-bold uppercase tracking-wider border-t border-[#2a344a] cursor-pointer">
+      <span>PLATAFORMAS</span>
+      <button class="toggle-section bg-transparent border-0 text-[#64748b] cursor-pointer text-xs">
+        <i class="fas fa-chevron-down"></i>
+      </button>
+    </div>
+    
+    <div class="section-content block overflow-hidden">
+      <!-- Nintendo con submenu -->
+      <div class="submenu-container relative">
+        <div class="submenu-header nav-item flex items-center justify-between px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white cursor-pointer">
+          <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap flex-1">Nintendo</span>
+          <button class="toggle-submenu bg-transparent border-0 text-[#a0aec0] cursor-pointer text-xs flex items-center justify-center transition-colors hover:text-white">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="submenu-content pl-[15px] border-l border-[#2a344a] ml-[22px] hidden">
+          <a href="/games/nintendo-nes" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">NES</span>
+          </a>
+          <a href="/games/super-nintendo" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">SNES</span>
+          </a>
+          <a href="/games/nintendo-64" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">Nintendo 64</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- PlayStation con submenu -->
+      <div class="submenu-container relative">
+        <div class="submenu-header nav-item flex items-center justify-between px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white cursor-pointer">
+          <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap flex-1">PlayStation</span>
+          <button class="toggle-submenu bg-transparent border-0 text-[#a0aec0] cursor-pointer text-xs flex items-center justify-center transition-colors hover:text-white">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="submenu-content pl-[15px] border-l border-[#2a344a] ml-[22px] hidden">
+          <a href="/games/playstation" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">PlayStation 1</span>
+          </a>
+          <a href="/games/playstation-2" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">PlayStation 2</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Xbox con submenu -->
+      <div class="submenu-container relative">
+        <div class="submenu-header nav-item flex items-center justify-between px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white cursor-pointer">
+          <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap flex-1">Xbox</span>
+          <button class="toggle-submenu bg-transparent border-0 text-[#a0aec0] cursor-pointer text-xs flex items-center justify-center transition-colors hover:text-white">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="submenu-content pl-[15px] border-l border-[#2a344a] ml-[22px] hidden">
+          <a href="/games/xbox" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">Xbox </span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Sega con submenu -->
+      <div class="submenu-container relative">
+        <div class="submenu-header nav-item flex items-center justify-between px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white cursor-pointer">
+          <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap flex-1">Sega</span>
+          <button class="toggle-submenu bg-transparent border-0 text-[#a0aec0] cursor-pointer text-xs flex items-center justify-center transition-colors hover:text-white">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="submenu-content pl-[15px] border-l border-[#2a344a] ml-[22px] hidden">
+          <a href="/games/master-system" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">Master System</span>
+          </a>
+          <a href="/games/mega-Drive" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">SEGA Mega Drive</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header flex items-center justify-between px-4 py-2.5 text-[#64748b] text-xs font-bold uppercase tracking-wider border-t border-[#2a344a] cursor-pointer">
+      <span>MI CUENTA</span>
+      <button class="toggle-section bg-transparent border-0 text-[#64748b] cursor-pointer text-xs">
+        <i class="fas fa-chevron-down"></i>
+      </button>
+    </div>
+
+    <div class="section-content block overflow-hidden">
+      <!-- Opciones siempre visibles -->
+      <a href="/profile" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-user text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Perfil</span>
+      </a>
+      <a href="/profile/orders" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-shopping-bag text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Mis pedidos</span>
+      </a>
+      <a href="/profile/wishlist" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-heart text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Lista de deseos</span>
+      </a>
+      <a href="/profile/settings" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+        <i class="fas fa-cog text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Configuración</span>
+      </a>
+      
+      <!-- Botón de logout SOLO visible cuando hay sesión activa -->
+      <a href="#" id="logout-button" class="nav-item authenticated-only flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white" style="display: none;">
+        <i class="fas fa-sign-out-alt text-lg w-6 text-center mr-2.5"></i>
+        <span class="nav-text whitespace-nowrap">Cerrar sesión</span>
+      </a>
+    </div>
+
+    <!--Sección del admin -->
+    <div id="admin-section" class="admin-section hidden">
+      <div class="section-header flex items-center justify-between px-4 py-2.5 text-[#64748b] text-xs font-bold uppercase tracking-wider border-t border-[#2a344a] cursor-pointer">
+        <span>ADMINISTRACIÓN</span>
+        <button class="toggle-section bg-transparent border-0 text-[#64748b] cursor-pointer text-xs">
+          <i class="fas fa-chevron-down"></i>
+        </button>
+      </div>
+      <div class="section-content block overflow-hidden">
+        <a href="/admin/games" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+          <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap">Gestionar Juegos</span>
+        </a>
+        <a href="/admin/consoles" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+          <i class="fas fa-tv text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap">Consolas</span>
+        </a>
+        <a href="/admin/categories" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+          <i class="fas fa-tags text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap">Categorías</span>
+        </a>
+        <a href="/admin/users" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+          <i class="fas fa-users text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap">Usuarios</span>
+        </a>
+        <a href="/admin/orders" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
+          <i class="fas fa-shopping-cart text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap">Pedidos</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-footer p-4 border-t border-[#2a344a]">
+    <div class="user-profile flex items-center">
+      <!-- Reemplazar el avatar por el círculo con iniciales -->
+      <div id="user-avatar" class="w-9 h-9 rounded-full overflow-hidden mr-2.5 bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+        <span id="user-initials" class="text-white text-sm font-medium">?</span>
+      </div>
+      <div class="user-info flex-1 min-w-0">
+        <div id="sidebar-username" class="username font-bold text-sm whitespace-nowrap overflow-hidden text-ellipsis">Invitado</div>
+        <div id="sidebar-email" class="email text-xs text-[#a0aec0] whitespace-nowrap overflow-hidden text-ellipsis">Inicia sesión</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  
+  
+<!-- Área donde se mostrará el modal de confirmación -->
+<div id="logout-confirmation-container"></div>
+<div id="sidebar-overlay" class="sidebar-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-[999] hidden"></div>
+
+
+
+
+
+<!-- Componente React para el modal -->
+<LogoutConfirmation client:load />
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const sectionToggles = document.querySelectorAll('.toggle-section');
+    const submenuToggles = document.querySelectorAll('.toggle-submenu');
+    const mainContent = document.querySelector('.main-content');
+    
+    // Toggle sidebar collapse
+    if (sidebarToggle) {
+      sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        
+        // Update main content margin
+        if (mainContent) {
+          if (sidebar.classList.contains('collapsed')) {
+            mainContent.style.marginLeft = '60px';
+          } else {
+            mainContent.style.marginLeft = '260px';
+          }
+        }
+
+        // Rotate the icon
+        const icon = sidebarToggle.querySelector('i');
+        if (icon) {
+          if (sidebar.classList.contains('collapsed')) {
+            icon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+          } else {
+            icon.classList.replace('fa-chevron-right', 'fa-chevron-left');
+          }
+        }
+      });
+    }
+
+    // Toggle sections
+    sectionToggles.forEach(toggle => {
+      toggle.addEventListener('click', (e) => {
+        const sectionContent = e.currentTarget.parentElement.nextElementSibling;
+        
+        // Don't toggle if sidebar is collapsed
+        if (sidebar.classList.contains('collapsed')) {
+          return;
+        }
+        
+        sectionContent.classList.toggle('collapsed');
+        
+        // Rotate icon
+        const icon = e.currentTarget.querySelector('i');
+        if (icon) {
+          if (sectionContent.classList.contains('collapsed')) {
+            icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
+          } else {
+            icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
+          }
+        }
+      });
+    });
+
+    // Toggle submenus
+    submenuToggles.forEach(toggle => {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        if (sidebar.classList.contains('collapsed')) {
+          return;
+        }
+        
+        const submenuContent = e.currentTarget.closest('.submenu-container').querySelector('.submenu-content');
+        submenuContent.classList.toggle('active');
+        
+        // Rotate icon
+        const icon = e.currentTarget.querySelector('i');
+        if (icon) {
+          if (submenuContent.classList.contains('active')) {
+            icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
+          } else {
+            icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
+          }
+        }
+      });
+    });
+
+    // Also toggle submenu when clicking on the submenu header
+    document.querySelectorAll('.submenu-header').forEach(header => {
+      header.addEventListener('click', (e) => {
+        if (sidebar.classList.contains('collapsed')) {
+          return;
+        }
+        
+        if (!e.target.closest('.toggle-submenu')) {
+          const submenuContent = e.currentTarget.closest('.submenu-container').querySelector('.submenu-content');
+          submenuContent.classList.toggle('active');
+          
+          const icon = e.currentTarget.querySelector('.toggle-submenu i');
+          if (icon) {
+            if (submenuContent.classList.contains('active')) {
+              icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
+            } else {
+              icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
+            }
+          }
+        }
+      });
+    });
+
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-toggle');
+    if (mobileMenuButton) {
+      mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.add('mobile-open');
+        sidebar.classList.remove('collapsed');
+        sidebarOverlay.classList.remove('hidden');
+      });
+    }
+
+    // Close mobile menu when clicking overlay
+    if (sidebarOverlay) {
+      sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.remove('mobile-open');
+        sidebarOverlay.classList.add('hidden');
+      });
+    }
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        if (sidebarOverlay) {
+          sidebarOverlay.classList.remove('active');
+          sidebarOverlay.classList.add('hidden');
+        }
+        sidebar.classList.remove('mobile-open');
+      } else {
+        if (!sidebar.classList.contains('mobile-open')) {
+          sidebar.classList.add('-translate-x-full');
+        }
+      }
+    });
+    
+    // Inicializar el estado del sidebar en móvil
+    if (window.innerWidth <= 768) {
+      sidebar.classList.add('-translate-x-full');
+    }
+
+    // Verificar si el usuario es admin para mostrar la sección
+    function checkAdminStatus() {
+      const user = localStorage.getItem('auth_user');
+      const adminSection = document.getElementById('admin-section');
+      
+      if (user && adminSection) {
+        try {
+          const userData = JSON.parse(user);
+          if (userData.role_id === 1) {
+            adminSection.classList.remove('hidden');
+          } else {
+            adminSection.classList.add('hidden');
+          }
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          adminSection.classList.add('hidden');
+        }
+      } else if (adminSection) {
+        adminSection.classList.add('hidden');
+      }
+    }
+    
+    // Función para actualizar la información del usuario en el sidebar
+    function updateUserInfo() {
+      const userStr = localStorage.getItem('auth_user');
+      const token = localStorage.getItem('auth_token');
+      
+      const usernameElement = document.getElementById('sidebar-username');
+      const emailElement = document.getElementById('sidebar-email');
+      const logoutButton = document.getElementById('logout-button');
+      
+      if (userStr && token) {
+        try {
+          const user = JSON.parse(userStr);
+          
+          if (usernameElement && user.name) {
+            usernameElement.textContent = user.name;
+          }
+          
+          if (emailElement && user.email) {
+            emailElement.textContent = user.email;
+          }
+          
+          // Mostrar SOLO el botón de logout
+          if (logoutButton) {
+            logoutButton.style.display = 'flex';
+          }
+          
+          // Verificar admin después de autenticar
+          checkAdminStatus();
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          clearUserInfo();
+        }
+      } else {
+        clearUserInfo();
+      }
+    }
+    
+    function clearUserInfo() {
+      const usernameElement = document.getElementById('sidebar-username');
+      const emailElement = document.getElementById('sidebar-email');
+      const logoutButton = document.getElementById('logout-button');
+      
+      if (usernameElement) usernameElement.textContent = 'Invitado';
+      if (emailElement) emailElement.textContent = 'Inicia sesión';
+      
+      // Ocultar SOLO el botón de logout
+      if (logoutButton) {
+        logoutButton.style.display = 'none';
+      }
+      
+      // Ocultar sección admin cuando no hay usuario
+      const adminSection = document.getElementById('admin-section');
+      if (adminSection) {
+        adminSection.classList.add('hidden');
+      }
+    }
+    
+    // Actualizar al cargar
+    updateUserInfo();
+    
+    // Escuchar eventos de autenticación
+    document.addEventListener('auth-state-changed', (event) => {
+      console.log('Auth state changed:', event.detail);
+      updateUserInfo();
+    });
+    
+    document.addEventListener('user-logged-in', (event) => {
+      console.log('User logged in:', event.detail);
+      updateUserInfo();
+    });
+    
+    // Botón de logout (solo visible para usuarios autenticados)
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+      logoutButton.addEventListener('click', async (e) => {
+        e.preventDefault();
+        document.dispatchEvent(new CustomEvent('show-logout-confirmation'));
+      });
+    }
+
+    // Escuchar la confirmación del logout
+    document.addEventListener('logout-confirmed', async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        
+        if (token) {
+          await fetch('http://localhost:8000/api/logout', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+        }
+
+        // Limpiar localStorage
+        localStorage.removeItem('auth_user');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_expires_at');
+        localStorage.removeItem('auth_last_check');
+
+        // Actualizar UI
+        clearUserInfo();
+
+        // Toast de despedida
+        document.dispatchEvent(new CustomEvent('show-toast', {
+          detail: {
+            title: '👋 ¡Hasta pronto!',
+            message: 'Has cerrado sesión correctamente.',
+            type: 'info',
+            duration: 2000
+          }
+        }));
+
+        // Emitir evento de logout
+        document.dispatchEvent(new CustomEvent('auth-state-changed', {
+          detail: { authenticated: false }
+        }));
+
+        // Redirigir sin recargar página
+        setTimeout(() => {
+          if (window.location.pathname !== '/') {
+            window.history.pushState({}, '', '/');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+          }
+        }, 1500);
+
+      } catch (error) {
+        console.error('Error durante logout:', error);
+        
+        document.dispatchEvent(new CustomEvent('show-toast', {
+          detail: {
+            title: '❌ Error',
+            message: 'Hubo un problema al cerrar sesión.',
+            type: 'error',
+            duration: 3000
+          }
+        }));
+        
+        // Limpiar localStorage de todas formas
+        localStorage.clear();
+        clearUserInfo();
+      }
+    });
+
+    // Interceptar clics en enlaces protegidos
+    const protectedLinks = [
+      'a[href="/profile"]',
+      'a[href="/profile/orders"]', 
+      'a[href="/profile/wishlist"]',
+      'a[href="/profile/settings"]',
+      '.protected-link'
+    ];
+
+    function isAuthenticated() {
+      const token = localStorage.getItem('auth_token');
+      const user = localStorage.getItem('auth_user');
+      return !!(token && user);
+    }
+
+    function requireAuth(targetUrl) {
+      document.dispatchEvent(new CustomEvent('show-toast', {
+        detail: {
+          title: '🔐 Acceso restringido',
+          message: 'Para acceder a esta sección necesitas iniciar sesión en tu cuenta.',
+          type: 'auth',
+          duration: 4000
+        }
+      }));
+    }
+
+    // Añadir event listeners a todos los enlaces protegidos
+    protectedLinks.forEach(selector => {
+      document.querySelectorAll(selector).forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          
+          const targetUrl = link.getAttribute('href');
+          
+          if (!isAuthenticated()) {
+            requireAuth(targetUrl);
+          } else {
+            // Si está autenticado, navegar normalmente
+            window.location.href = targetUrl;
+          }
+        });
+      });
+    }); 
+
+    // Función para obtener las iniciales del nombre
+    function getInitials(name) {
+      if (!name) return '?';
+      return name
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase())
+        .slice(0, 2)
+        .join('');
+    }
+    
+    // Función para actualizar la información del usuario en el sidebar
+    function updateUserInfo() {
+      const userStr = localStorage.getItem('auth_user');
+      const token = localStorage.getItem('auth_token');
+      
+      const usernameElement = document.getElementById('sidebar-username');
+      const emailElement = document.getElementById('sidebar-email');
+      const logoutButton = document.getElementById('logout-button');
+      const initialsElement = document.getElementById('user-initials');
+      
+      if (userStr && token) {
+        try {
+          const user = JSON.parse(userStr);
+          
+          if (usernameElement && user.name) {
+            usernameElement.textContent = user.name;
+          }
+          
+          if (emailElement && user.email) {
+            emailElement.textContent = user.email;
+          }
+          
+          // Actualizar las iniciales
+          if (initialsElement && user.name) {
+            initialsElement.textContent = getInitials(user.name);
+          }
+          
+          // Mostrar SOLO el botón de logout
+          if (logoutButton) {
+            logoutButton.style.display = 'flex';
+          }
+          
+          // Verificar admin después de autenticar
+          checkAdminStatus();
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          clearUserInfo();
+        }
+      } else {
+        clearUserInfo();
+      }
+    }
+    
+    function clearUserInfo() {
+      const usernameElement = document.getElementById('sidebar-username');
+      const emailElement = document.getElementById('sidebar-email');
+      const logoutButton = document.getElementById('logout-button');
+      const initialsElement = document.getElementById('user-initials');
+      
+      if (usernameElement) usernameElement.textContent = 'Invitado';
+      if (emailElement) emailElement.textContent = 'Inicia sesión';
+      if (initialsElement) initialsElement.textContent = '?';
+      
+      // Ocultar SOLO el botón de logout
+      if (logoutButton) {
+        logoutButton.style.display = 'none';
+      }
+      
+      // Ocultar sección admin cuando no hay usuario
+      const adminSection = document.getElementById('admin-section');
+      if (adminSection) {
+        adminSection.classList.add('hidden');
+      }
+    }
+
+
+  });
+</script>

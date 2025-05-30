@@ -1,0 +1,99 @@
+
+/* Estas clases son necesarias para mantener la funcionalidad original */
+/* Aunque usamos Tailwind para la mayoría de estilos, estas clases controlan los estados */
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+.section-content.collapsed {
+  display: none;
+}
+
+.submenu-content.active {
+  display: block;
+}
+
+/* Estilos específicos para el sidebar colapsado */
+.sidebar.collapsed .logo-container {
+  justify-content: center;
+}
+
+.sidebar.collapsed .brand-name,
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .section-header span,
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .settings-button,
+.sidebar.collapsed .toggle-submenu,
+.sidebar.collapsed .toggle-section {
+  display: none;
+}
+
+.sidebar.collapsed .logo {
+  margin-right: 0;
+}
+
+.sidebar.collapsed .sidebar-toggle i {
+  transform: rotate(180deg);
+}
+
+.sidebar.collapsed .nav-item,
+.sidebar.collapsed .submenu-header {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.sidebar.collapsed .nav-item i {
+  margin-right: 0;
+}
+
+.sidebar.collapsed .section-header {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.sidebar.collapsed .avatar {
+  margin-right: 0;
+}
+
+.sidebar.collapsed .user-profile {
+  justify-content: center;
+}
+
+/* Manejo de submenús en el sidebar colapsado */
+.sidebar.collapsed .submenu-content {
+  position: absolute;
+  left: 60px;
+  top: 0;
+  background-color: #1e293b;
+  border: 1px solid #2a344a;
+  border-radius: 4px;
+  padding: 5px 0;
+  width: 200px;
+  z-index: 10;
+  margin-left: 0;
+}
+
+.sidebar.collapsed .submenu-content.active {
+  display: none;
+}
+
+.sidebar.collapsed .submenu-container:hover .submenu-content {
+  display: block;
+}
+
+/* Overlay para móvil */
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* Soporte para móvil */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+}

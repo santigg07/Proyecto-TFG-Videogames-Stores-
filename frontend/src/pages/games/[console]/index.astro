@@ -1,0 +1,88 @@
+---
+//
+// import "../../../styles/global.css";
+import MainLayout from '../../../layouts/MainLayout.astro';
+import ProductCard from '../../../components/products/ProductCard.astro';
+import { getGamesByConsole, getConsole } from '../../../utils/api';
+import { getBackendImageUrl } from '../../../utils/image-utils';
+import "../../../styles/global.css";
+
+// Obtener el parámetro de la URL
+const { console: consoleSlug } = Astro.params;
+console.log("Slug de consola recibido:", consoleSlug);
+
+// Obtener información de la consola y sus juegos
+let consoleData;
+interface Game {
+  id: string;
+  name: string;
+  image?: string;
+  sale_price?: number;
+  price: number;
+  slug: string;
+}
+
+let games: Game[] = [];
+let error: string | null = null;
+
+try {
+  // Obtener información de la consola
+  consoleData = await getConsole(consoleSlug);
+  console.log("Datos de consola recibidos:", consoleData);
+  
+  // Obtener juegos de esa consola
+  const gamesData = await getGamesByConsole(consoleSlug);
+  console.log("Datos de juegos recibidos:", gamesData);
+  
+  // Ajusta según la estructura exacta de tu respuesta
+  games = gamesData.games?.data || gamesData.games || [];
+} catch (err) {
+  console.error("Error detallado:", err);
+  error = "No se pudo cargar la información. Por favor, inténtalo de nuevo más tarde.";
+}
+---
+
+<MainLayout title={consoleData ? `Juegos de ${consoleData.name} - Retro Time` : "Consola no encontrada - Retro Time"}>
+  <div class="container mx-auto px-4 py-8">
+    {error ? (
+      <div class="bg-red-500 text-white p-4 rounded mb-4">
+        {error}
+      </div>
+    ) : (
+      <>
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-3xl font-bold">Juegos de {consoleData.name}</h1>
+          
+          <div class="breadcrumbs text-sm text-gray-400">
+            <a href="/" class="hover:text-white">Inicio</a> &gt; 
+            <a href="/games" class="hover:text-white">Juegos</a> &gt; 
+            <span class="text-white">{consoleData.name}</span>
+          </div>
+        </div>
+        
+        {games.length > 0 ? (
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {games.map(game => (
+              <ProductCard 
+                id={game.id}
+                title={game.name}
+                console={consoleData.name}
+                imageUrl={getBackendImageUrl(game.image)}
+                price={game.sale_price || game.price}
+                slug={game.slug}
+                consoleSlug={consoleSlug}
+              />
+            ))}
+          </div>
+        ) : (
+          <div class="text-center py-12">
+            <p class="text-xl">No hay juegos disponibles para {consoleData.name}</p>
+            <a href="/games" class="inline-block mt-4 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded">
+              Ver todas las plataformas
+            </a>
+          </div>
+        )}
+      </>
+    )}
+  </div>
+</MainLayout>

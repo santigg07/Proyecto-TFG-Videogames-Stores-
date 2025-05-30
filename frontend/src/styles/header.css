@@ -1,0 +1,129 @@
+.header {
+    background-color: #a32b26; /* Color de fondo del header */
+    padding: 15px 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+  
+.container {
+    width: 95%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+  
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+  
+.logo a {
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+}
+  
+.search-bar {
+    flex: 1;
+    max-width: 500px;
+    margin: 0 20px;
+}
+  
+.search-bar form {
+    display: flex;
+    position: relative;
+}
+  
+.search-bar input {
+    width: 100%;
+    padding: 10px 40px 10px 15px;
+    border: none;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: black;
+}
+  
+.search-bar input:focus {
+    outline: none;
+    background-color: white;
+}
+  
+.search-bar button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 40px;
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+}
+  
+.header-actions {
+    display: flex;
+    align-items: center;
+}
+  
+.cart-icon {
+    position: relative;
+    font-size: 20px;
+    color: white;
+    margin-right: 20px;
+    text-decoration: none;
+}
+  
+.cart-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ffcc00;
+    color: black;
+    font-size: 12px;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+  
+/* Mantener el estilo original del botón de login, pero cambiando de <a> a <button> */
+.login-button {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+  
+.login-button:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+  
+@media (max-width: 768px) {
+    .header-content {
+      flex-wrap: wrap;
+    }
+    
+    .logo {
+      order: 1;
+      margin-bottom: 10px;
+    }
+    
+    .search-bar {
+      order: 3;
+      max-width: 100%;
+      margin: 10px 0 0;
+    }
+    
+    .header-actions {
+      order: 2;
+    }
+}

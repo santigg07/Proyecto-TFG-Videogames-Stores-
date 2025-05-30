@@ -1,0 +1,28 @@
+---
+// src/pages/admin/consoles/index.astro
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import ConsolesManagement from '../../../components/admin/ConsolesManagement';
+---
+
+<AdminLayout title="Gestión de Consolas">
+  <div class="max-w-7xl mx-auto">
+    <ConsolesManagement client:load />
+</AdminLayout>
+
+
+<style>
+  /* Estilos específicos para la página de consolas */
+  #consoles-management-root {
+    min-height: calc(100vh - 200px);
+  }
+
+  /* Asegurar que los modales se muestren correctamente */
+  .fixed {
+    position: fixed !important;
+  }
+
+  /* Estilos para los toasts */
+  .toast-container {
+    z-index: 9999;
+  }
+</style>

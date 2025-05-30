@@ -1,0 +1,54 @@
+---
+// Header.astro
+import LoginModal from '../auth/LoginModal.jsx';
+import CartDropdown from '../../components/cart/CartDropdown.jsx';
+---
+
+<header class="bg-[#a32b26] py-4 shadow-sm relative">
+  <div class="w-[95%] max-w-[1400px] mx-auto">
+    <div class="flex flex-wrap md:flex-nowrap items-center justify-between">
+      <div class="logo order-1 md:order-none mb-2.5 md:mb-0">
+        <img src="/assets/images/Retro-Time-02.png" alt="Logo Retro Time" class="h-10 md:h-20">
+        <!--<a href="/" class="text-white text-2xl font-bold no-underline">Retro Time</a>-->
+      </div>
+      
+      <div class="search-bar order-3 md:order-none w-full md:flex-1 md:max-w-[500px] mt-2.5 md:mt-0 md:mx-5">
+        <form action="/search" method="get" class="flex relative">
+          <input 
+            type="text" 
+            name="q" 
+            placeholder="Buscar juegos..." 
+            aria-label="Buscar juegos"
+            class="w-full py-2.5 px-4 pr-10 border-none rounded bg-white/90 text-black focus:outline-none focus:bg-white"
+          >
+          <button type="submit" class="absolute right-0 top-0 h-full w-10 bg-transparent border-none text-gray-600 cursor-pointer">
+            <i class="fas fa-search"></i>
+          </button>
+        </form>
+      </div>
+      
+      <div class="header-actions order-2 md:order-none flex items-center">
+        <!-- CartDropdown ya incluye su propio botón -->
+        <CartDropdown client:load />
+        
+        <button id="login-button" class="login-button bg-black/20 text-white px-4 py-2 rounded no-underline font-medium transition-colors duration-200 border-none cursor-pointer text-base hover:bg-black/30 ml-4">
+          Iniciar sesión
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <LoginModal client:load />
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Configurar el botón de login para activar el modal
+    const loginButton = document.getElementById('login-button');
+    if (loginButton) {
+      loginButton.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('toggle-login-modal'));
+      });
+    }
+  });
+</script>

@@ -1,0 +1,44 @@
+---
+// src/pages/test-api.astro
+---
+
+<html>
+<head>
+  <title>Test API</title>
+</head>
+<body>
+  <h1>API Test</h1>
+  <div id="results">Cargando...</div>
+
+  <script>
+    async function fetchData() {
+      try {
+        // Usa el protocolo, hostname y puerto correctos
+        const protocol = window.location.protocol;
+        const hostname = 'localhost'; // o el hostname correcto si es diferente
+        const port = '8000';
+        
+        const response = await fetch(`${protocol}//${hostname}:${port}/api/games`);
+        const data = await response.json();
+          const resultsElement = document.getElementById('results');
+          if (resultsElement) {
+            resultsElement.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+          } else {
+            console.error('Element with id "results" not found.');
+          }
+        } catch (error) {
+          const resultsElement = document.getElementById('results');
+          if (resultsElement) {
+            resultsElement.innerHTML = `<p style="color: red">Error: ${error.message}</p>
+              <p>Verifica que el backend esté funcionando en localhost:8000
+              y que CORS esté configurado correctamente.</p>`;
+          } else {
+            console.error('Element with id "results" not found.');
+        }
+      }
+    }
+
+    fetchData();
+  </script>
+</body>
+</html>
