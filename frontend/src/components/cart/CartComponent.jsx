@@ -89,7 +89,7 @@ const CartComponent = () => {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 py-8">
+      <div className="bg-black py-25">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-sm p-8">
             <div className="flex flex-col items-center">
@@ -104,7 +104,7 @@ const CartComponent = () => {
 
   if (error) {
     return (
-      <div className="bg-gray-50 py-8">
+      <div className="bg-black py-25">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
             <div className="text-red-600 text-lg font-medium mb-2">Error al cargar el carrito</div>
@@ -124,7 +124,7 @@ const CartComponent = () => {
   // Carrito vacío
   if (!cartItems?.length) {
     return (
-      <div className="bg-gray-50 py-8">
+      <div className="bg-black py-25">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
             <ShoppingCartIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -143,7 +143,7 @@ const CartComponent = () => {
   }
 
   return (
-    <div className="bg-gray-50 py-6">
+    <div className="bg-black py-25">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow-sm p-6">
           {/* Encabezado */}

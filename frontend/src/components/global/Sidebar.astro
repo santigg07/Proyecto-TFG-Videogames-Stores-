@@ -4,7 +4,7 @@ import "../../styles/sidebar.css";
 import LogoutConfirmation from '../ui/LogoutConfirmation';
 ---
 
-<div id="sidebar" class="sidebar fixed top-0 left-0 w-[260px] h-screen bg-[#151c28] text-white z-[1000] flex flex-col transition-transform duration-300 shadow-md">
+<div id="sidebar" class="sidebar fixed top-0 left-0 w-[260px] flex flex-col h-screen bg-[#151c28] text-white z-[1000]  transition-transform duration-300 shadow-md">
   <div class="sidebar-header flex items-center justify-between p-4 border-b border-[#2a344a]">
     <div class="logo-container flex items-center">
       <div class="logo w-[40px] h-[30px] mr-2.5 flex items-center justify-center">
@@ -63,26 +63,67 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
             <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
             <span class="nav-text whitespace-nowrap">Nintendo 64</span>
           </a>
-          <a href="/games/nintendo-gamecube" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+        </div>
+      </div>
+
+      <!-- PlayStation con submenu -->
+      <div class="submenu-container relative">
+        <div class="submenu-header nav-item flex items-center justify-between px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white cursor-pointer">
+          <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap flex-1">PlayStation</span>
+          <button class="toggle-submenu bg-transparent border-0 text-[#a0aec0] cursor-pointer text-xs flex items-center justify-center transition-colors hover:text-white">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="submenu-content pl-[15px] border-l border-[#2a344a] ml-[22px] hidden">
+          <a href="/games/playstation" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
             <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
-            <span class="nav-text whitespace-nowrap">GameCube</span>
+            <span class="nav-text whitespace-nowrap">PlayStation 1</span>
+          </a>
+          <a href="/games/playstation-2" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">PlayStation 2</span>
           </a>
         </div>
       </div>
-      
-      <!-- Otras plataformas -->
-      <a href="/games/playstation" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
-        <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
-        <span class="nav-text whitespace-nowrap">PlayStation</span>
-      </a>
-      <a href="/games/xbox" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
-        <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
-        <span class="nav-text whitespace-nowrap">Xbox</span>
-      </a>
-      <a href="/games/sega-genesis" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
-        <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
-        <span class="nav-text whitespace-nowrap">Sega</span>
-      </a>
+
+      <!-- Xbox con submenu -->
+      <div class="submenu-container relative">
+        <div class="submenu-header nav-item flex items-center justify-between px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white cursor-pointer">
+          <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap flex-1">Xbox</span>
+          <button class="toggle-submenu bg-transparent border-0 text-[#a0aec0] cursor-pointer text-xs flex items-center justify-center transition-colors hover:text-white">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="submenu-content pl-[15px] border-l border-[#2a344a] ml-[22px] hidden">
+          <a href="/games/xbox" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">Xbox </span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Sega con submenu -->
+      <div class="submenu-container relative">
+        <div class="submenu-header nav-item flex items-center justify-between px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white cursor-pointer">
+          <i class="fas fa-gamepad text-lg w-6 text-center mr-2.5"></i>
+          <span class="nav-text whitespace-nowrap flex-1">Sega</span>
+          <button class="toggle-submenu bg-transparent border-0 text-[#a0aec0] cursor-pointer text-xs flex items-center justify-center transition-colors hover:text-white">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="submenu-content pl-[15px] border-l border-[#2a344a] ml-[22px] hidden">
+          <a href="/games/master-system" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">Master System</span>
+          </a>
+          <a href="/games/mega-Drive" class="nav-item submenu-item flex items-center px-4 py-2 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white text-sm">
+            <i class="fas fa-circle text-xs w-6 text-center mr-2.5"></i>
+            <span class="nav-text whitespace-nowrap">SEGA Mega Drive</span>
+          </a>
+        </div>
+      </div>
     </div>
 
     <div class="section-header flex items-center justify-between px-4 py-2.5 text-[#64748b] text-xs font-bold uppercase tracking-wider border-t border-[#2a344a] cursor-pointer">
@@ -91,6 +132,7 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
         <i class="fas fa-chevron-down"></i>
       </button>
     </div>
+
     <div class="section-content block overflow-hidden">
       <!-- Opciones siempre visibles -->
       <a href="/profile" class="nav-item flex items-center px-4 py-2.5 text-[#a0aec0] no-underline transition-all duration-200 hover:bg-[#1e293b] hover:text-white">
@@ -149,27 +191,30 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
       </div>
     </div>
   </div>
-
   <div class="sidebar-footer p-4 border-t border-[#2a344a]">
     <div class="user-profile flex items-center">
-      <div class="avatar w-9 h-9 rounded-full overflow-hidden mr-2.5">
-        <img src="/assets/images/avatar-placeholder.png" alt="Avatar" class="w-full h-full object-cover" onerror="this.src='/assets/images/fallback-avatar.png'; this.onerror=null;">
+      <!-- Reemplazar el avatar por el círculo con iniciales -->
+      <div id="user-avatar" class="w-9 h-9 rounded-full overflow-hidden mr-2.5 bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+        <span id="user-initials" class="text-white text-sm font-medium">?</span>
       </div>
       <div class="user-info flex-1 min-w-0">
         <div id="sidebar-username" class="username font-bold text-sm whitespace-nowrap overflow-hidden text-ellipsis">Invitado</div>
         <div id="sidebar-email" class="email text-xs text-[#a0aec0] whitespace-nowrap overflow-hidden text-ellipsis">Inicia sesión</div>
       </div>
-      <button class="settings-button bg-transparent border-0 text-[#a0aec0] cursor-pointer text-base ml-2.5">
-        <i class="fas fa-cog"></i>
-      </button>
     </div>
   </div>
-  
-  <!-- Área donde se mostrará el modal de confirmación -->
-  <div id="logout-confirmation-container"></div>
 </div>
 
+
+  
+  
+<!-- Área donde se mostrará el modal de confirmación -->
+<div id="logout-confirmation-container"></div>
 <div id="sidebar-overlay" class="sidebar-overlay fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-[999] hidden"></div>
+
+
+
+
 
 <!-- Componente React para el modal -->
 <LogoutConfirmation client:load />
@@ -528,5 +573,82 @@ import LogoutConfirmation from '../ui/LogoutConfirmation';
         });
       });
     }); 
+
+    // Función para obtener las iniciales del nombre
+    function getInitials(name) {
+      if (!name) return '?';
+      return name
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase())
+        .slice(0, 2)
+        .join('');
+    }
+    
+    // Función para actualizar la información del usuario en el sidebar
+    function updateUserInfo() {
+      const userStr = localStorage.getItem('auth_user');
+      const token = localStorage.getItem('auth_token');
+      
+      const usernameElement = document.getElementById('sidebar-username');
+      const emailElement = document.getElementById('sidebar-email');
+      const logoutButton = document.getElementById('logout-button');
+      const initialsElement = document.getElementById('user-initials');
+      
+      if (userStr && token) {
+        try {
+          const user = JSON.parse(userStr);
+          
+          if (usernameElement && user.name) {
+            usernameElement.textContent = user.name;
+          }
+          
+          if (emailElement && user.email) {
+            emailElement.textContent = user.email;
+          }
+          
+          // Actualizar las iniciales
+          if (initialsElement && user.name) {
+            initialsElement.textContent = getInitials(user.name);
+          }
+          
+          // Mostrar SOLO el botón de logout
+          if (logoutButton) {
+            logoutButton.style.display = 'flex';
+          }
+          
+          // Verificar admin después de autenticar
+          checkAdminStatus();
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          clearUserInfo();
+        }
+      } else {
+        clearUserInfo();
+      }
+    }
+    
+    function clearUserInfo() {
+      const usernameElement = document.getElementById('sidebar-username');
+      const emailElement = document.getElementById('sidebar-email');
+      const logoutButton = document.getElementById('logout-button');
+      const initialsElement = document.getElementById('user-initials');
+      
+      if (usernameElement) usernameElement.textContent = 'Invitado';
+      if (emailElement) emailElement.textContent = 'Inicia sesión';
+      if (initialsElement) initialsElement.textContent = '?';
+      
+      // Ocultar SOLO el botón de logout
+      if (logoutButton) {
+        logoutButton.style.display = 'none';
+      }
+      
+      // Ocultar sección admin cuando no hay usuario
+      const adminSection = document.getElementById('admin-section');
+      if (adminSection) {
+        adminSection.classList.add('hidden');
+      }
+    }
+
+
   });
 </script>

@@ -7,10 +7,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\Console;
 use App\Models\Category;
+use App\Models\GameImage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class GameController extends Controller
 {
@@ -98,6 +101,7 @@ class GameController extends Controller
     {
         try {
             Log::info('Datos recibidos para crear juego:', $request->all());
+            Log::info('Archivos recibidos:', $request->allFiles());
             
             $request->validate([
                 'name' => 'required|string|max:255',
@@ -111,23 +115,26 @@ class GameController extends Controller
                 'manufacturer' => 'nullable|string|max:100',
                 'includes' => 'nullable|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'additional_images' => 'nullable|array',
+                'additional_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
                 'category_ids' => 'nullable|array',
                 'category_ids.*' => 'exists:categories,id'
             ]);
             
-            $data = $request->all();
+            $data = $request->except(['additional_images']);
             
             // Generar slug si no se proporciona
             if (empty($data['slug'])) {
                 $data['slug'] = Str::slug($request->name);
             }
             
-            // Manejar la imagen
+            // Manejar la imagen principal
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('games', 'public');
                 $data['image'] = $imagePath;
             }
             
+            // Crear el juego
             $game = Game::create($data);
             
             // Asociar categorías
@@ -135,14 +142,42 @@ class GameController extends Controller
                 $game->categories()->sync($request->category_ids);
             }
             
+            // Manejar imágenes adicionales
+            if ($request->hasFile('additional_images')) {
+                $additionalImages = $request->file('additional_images');
+                Log::info('Imágenes adicionales recibidas:', ['count' => count($additionalImages)]);
+                
+                foreach ($additionalImages as $index => $additionalImage) {
+                    try {
+                        $additionalImagePath = $additionalImage->store('games', 'public');
+                        
+                        // Crear registro en game_images
+                        $game->images()->create([
+                            'image_path' => $additionalImagePath,
+                            'is_main' => 0
+                        ]);
+                        
+                        Log::info('Imagen adicional guardada:', [
+                            'index' => $index,
+                            'path' => $additionalImagePath
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Error guardando imagen adicional:', [
+                            'index' => $index,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
+            
             Log::info('Juego creado exitosamente:', ['game_id' => $game->id]);
             
             return response()->json([
                 'message' => 'Juego creado exitosamente',
-                'game' => $game->load(['console', 'categories'])
+                'game' => $game->load(['console', 'categories', 'images'])
             ], 201);
             
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             Log::error('Error de validación:', $e->errors());
             return response()->json([
                 'message' => 'Error de validación',
@@ -150,6 +185,7 @@ class GameController extends Controller
             ], 422);
         } catch (\Exception $e) {
             Log::error('Error creando juego: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return response()->json([
                 'message' => 'Error interno del servidor',
@@ -182,6 +218,9 @@ class GameController extends Controller
         try {
             $game = Game::findOrFail($id);
             
+            Log::info('Actualizando juego:', ['id' => $id]);
+            Log::info('Archivos recibidos:', $request->allFiles());
+            
             $request->validate([
                 'name' => 'required|string|max:255',
                 'console_id' => 'required|exists:consoles,id',
@@ -194,21 +233,23 @@ class GameController extends Controller
                 'manufacturer' => 'nullable|string|max:100',
                 'includes' => 'nullable|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'additional_images' => 'nullable|array',
+                'additional_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
                 'category_ids' => 'nullable|array',
                 'category_ids.*' => 'exists:categories,id'
             ]);
             
-            $data = $request->all();
+            $data = $request->except(['additional_images']);
             
             // Generar slug si cambió el nombre
             if (empty($data['slug'])) {
                 $data['slug'] = Str::slug($request->name);
             }
             
-            // Manejar la imagen
+            // Manejar la imagen principal
             if ($request->hasFile('image')) {
                 // Eliminar imagen anterior si existe
-                if ($game->image) {
+                if ($game->image && Storage::disk('public')->exists($game->image)) {
                     Storage::disk('public')->delete($game->image);
                 }
                 
@@ -223,14 +264,77 @@ class GameController extends Controller
                 $game->categories()->sync($request->category_ids);
             }
             
+            // Manejar imágenes adicionales
+            if ($request->hasFile('additional_images')) {
+                $additionalImages = $request->file('additional_images');
+                Log::info('Imágenes adicionales para actualizar:', ['count' => count($additionalImages)]);
+                
+                foreach ($additionalImages as $index => $additionalImage) {
+                    try {
+                        $additionalImagePath = $additionalImage->store('games', 'public');
+                        
+                        // Crear registro en game_images
+                        $game->images()->create([
+                            'image_path' => $additionalImagePath,
+                            'is_main' => 0
+                        ]);
+                        
+                        Log::info('Imagen adicional agregada:', [
+                            'index' => $index,
+                            'path' => $additionalImagePath
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Error agregando imagen adicional:', [
+                            'index' => $index,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
+            
             return response()->json([
                 'message' => 'Juego actualizado exitosamente',
-                'game' => $game->load(['console', 'categories'])
+                'game' => $game->load(['console', 'categories', 'images'])
             ]);
+        } catch (ValidationException $e) {
+            Log::error('Error de validación al actualizar:', $e->errors());
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             Log::error('Error actualizando juego: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Error al actualizar juego',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Eliminar una imagen específica de un juego
+     */
+    public function deleteImage($gameId, $imageId)
+    {
+        try {
+            $game = Game::findOrFail($gameId);
+            $image = $game->images()->findOrFail($imageId);
+            
+            // Eliminar archivo físico
+            if (Storage::disk('public')->exists($image->image_path)) {
+                Storage::disk('public')->delete($image->image_path);
+            }
+            
+            // Eliminar registro de la base de datos
+            $image->delete();
+            
+            return response()->json([
+                'message' => 'Imagen eliminada exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error eliminando imagen: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error al eliminar imagen',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -242,16 +346,25 @@ class GameController extends Controller
     public function destroy($id)
     {
         try {
-            $game = Game::findOrFail($id);
+            $game = Game::with('images')->findOrFail($id);
             
-            // Eliminar imagen si existe
+            // Eliminar imagen principal si existe
             if ($game->image) {
                 Storage::disk('public')->delete($game->image);
             }
             
-            // Eliminar relaciones
+            // Eliminar imágenes adicionales
+            foreach ($game->images as $image) {
+                if (Storage::disk('public')->exists($image->image_path)) {
+                    Storage::disk('public')->delete($image->image_path);
+                }
+                $image->delete();
+            }
+            
+            // Eliminar relaciones de categorías
             $game->categories()->detach();
             
+            // Eliminar el juego
             $game->delete();
             
             return response()->json([

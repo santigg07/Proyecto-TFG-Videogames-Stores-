@@ -215,15 +215,34 @@ export default function GameForm({
 
     const submitData = new FormData();
     
-    Object.keys(formData).forEach(key => {
+    // Asegurarse de que el slug esté presente
+    const dataToSubmit = { ...formData };
+    if (!dataToSubmit.slug || dataToSubmit.slug.trim() === '') {
+      dataToSubmit.slug = generateSlug(dataToSubmit.name);
+    }
+    
+    // Agregar todos los campos
+    Object.keys(dataToSubmit).forEach(key => {
       if (key === 'category_ids') {
-        formData[key].forEach(categoryId => {
+        dataToSubmit[key].forEach(categoryId => {
           submitData.append('category_ids[]', categoryId);
         });
-      } else if (formData[key] !== null && formData[key] !== '') {
-        submitData.append(key, formData[key]);
+      } else if (key === 'image' && dataToSubmit[key] instanceof File) {
+        submitData.append('image', dataToSubmit[key]);
+      } else if (key === 'additional_images' && dataToSubmit[key].length > 0) {
+        dataToSubmit[key].forEach((file) => {
+          submitData.append('additional_images[]', file);
+        });
+      } else if (key !== 'image' && key !== 'additional_images' && dataToSubmit[key] !== null && dataToSubmit[key] !== '') {
+        submitData.append(key, dataToSubmit[key]);
       }
     });
+
+    // Log para debug
+    console.log('FormData entries being sent:');
+    for (let pair of submitData.entries()) {
+      console.log(pair[0] + ': ', pair[1]);
+    }
 
     onSubmit(submitData);
   };

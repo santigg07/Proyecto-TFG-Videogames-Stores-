@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
     /**
-     * Display a listing of the users.
+     * Mostrar un listado de los usuarios.
      */
     public function index(Request $request): JsonResponse
     {
@@ -66,7 +66,7 @@ class UserController extends Controller
     }
 
     /**
-     * Store a newly created user in storage.
+     * Almacena un usuario recién creado.
      */
     public function store(Request $request): JsonResponse
     {
@@ -128,7 +128,7 @@ class UserController extends Controller
     }
 
     /**
-     * Display the specified user.
+     * Mostrar el usuario especificado.
      */
     public function show(User $user): JsonResponse
     {
@@ -145,7 +145,7 @@ class UserController extends Controller
     }
 
     /**
-     * Update the specified user in storage.
+     * Actualiza el usuario especificado en el almacenamiento.
      */
     public function update(Request $request, User $user): JsonResponse
     {
@@ -214,7 +214,7 @@ class UserController extends Controller
     }
 
     /**
-     * Remove the specified user from storage.
+     * Elimina el usuario especificado del almacenamiento.
      */
     public function destroy(User $user): JsonResponse
     {
@@ -242,7 +242,7 @@ class UserController extends Controller
     }
 
     /**
-     * Get all roles for dropdowns.
+     * Obtener todos los roles para los desplegables.
      */
     public function getRoles(): JsonResponse
     {

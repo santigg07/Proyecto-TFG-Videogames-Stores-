@@ -68,7 +68,7 @@ export default function ModalHandler() {
       cancelText={modalState.cancelText}
       type={modalState.type}
       onConfirm={handleConfirm}
-      onCancel={handleCancel}
+      onClose={handleCancel}
     />
   );
 }
