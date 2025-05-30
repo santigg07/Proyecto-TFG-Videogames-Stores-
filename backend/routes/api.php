@@ -35,6 +35,7 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/games', [GameController::class, 'index']);
 Route::get('/games/search', [GameController::class, 'search']);
 Route::get('/games/filter-data', [GameController::class, 'getFilterData']);
+Route::get('/games/latest', [GameController::class, 'latest']);
 Route::get('/games/console/{consoleSlug}', [GameController::class, 'getByConsole']);
 Route::get('/games/{gameId}/reviews', [ReviewController::class, 'index']);
 Route::get('/games/{slug}', [GameController::class, 'show']);
@@ -148,6 +149,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     
     // Manejo de imágenes
     Route::delete('/games/{gameId}/images/{imageId}', [AdminGameController::class, 'deleteImage']);
+
+    // Ruta para eliminar imagen individual
+    Route::delete('/admin/games/{gameId}/images/{imageId}', [GameController::class, 'deleteImage']);
 
     // CRUD completo de consolas
     Route::apiResource('consoles', AdminConsoleController::class);

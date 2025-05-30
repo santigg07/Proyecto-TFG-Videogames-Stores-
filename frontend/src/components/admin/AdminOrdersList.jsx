@@ -126,6 +126,7 @@ const AdminOrdersList = () => {
     <div className="space-y-6">
       {/* Filtros */}
       <div className="bg-gray-800 rounded-lg p-6">
+        <h3 className="text-lg font-medium text-white mb-4">Filtros de búsqueda</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">
@@ -195,6 +196,12 @@ const AdminOrdersList = () => {
 
       {/* Lista de pedidos */}
       <div className="bg-gray-800 rounded-lg overflow-hidden">
+        {/* Header de la tabla */}
+        <div className="px-6 py-4 border-b border-gray-700">
+          <h3 className="text-lg font-medium text-white">
+            Lista de Pedidos ({orders.length})
+          </h3>
+        </div>
         {loading ? (
           <div className="p-8 text-center">
             <div className="animate-spin h-8 w-8 border-4 border-red-500 border-t-transparent rounded-full mx-auto"></div>

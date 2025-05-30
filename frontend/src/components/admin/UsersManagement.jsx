@@ -301,7 +301,7 @@ export default function UsersManagement() {
               value={filters.search}
               onChange={(e) => handleFilterChange({ search: e.target.value })}
               placeholder="Nombre o email..."
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
 
@@ -313,7 +313,7 @@ export default function UsersManagement() {
             <select
               value={filters.role}
               onChange={(e) => handleFilterChange({ role: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="">Todos los roles</option>
               {roles.map(role => (
@@ -332,7 +332,7 @@ export default function UsersManagement() {
             <select
               value={filters.verified}
               onChange={(e) => handleFilterChange({ verified: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="">Todos</option>
               <option value="verified">Verificados</option>
@@ -344,7 +344,7 @@ export default function UsersManagement() {
           <div className="flex items-end">
             <button
               onClick={clearFilters}
-              className="w-full px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-md transition-colors"
+              className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-800 text-white rounded-md transition-colors"
             >
               <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -356,7 +356,7 @@ export default function UsersManagement() {
       </div>
 
       {/* Lista de usuarios */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className=" rounded-lg shadow overflow-hidden">
         <UsersList
           users={users}
           pagination={pagination}

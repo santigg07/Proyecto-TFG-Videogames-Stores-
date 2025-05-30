@@ -1,53 +1,57 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import ProductCard from '../components/products/ProductCard.astro';
+import { getLatestGames } from '../utils/api.js';
 import "../styles/global.css";
 
-// Simulación de datos para la demo
-const featuredGames = [
-  {
-    id: 1,
-    title: 'Mario 64',
-    console: 'Nintendo 64',
-    imageUrl: '/assets/images/games/mario64.jpg',
-    price: 79.99
-  },
-  {
-    id: 2,
-    title: 'Mario Kart 64',
-    console: 'Nintendo 64',
-    imageUrl: '/assets/images/games/Mario_Kart_64.jpg',
-    price: 69.99
-  },
-  {
-    id: 3,
-    title: 'Super Metroid',
-    console: 'Super Nintendo',
-    imageUrl: '/assets/images/games/metroid.jpg',
-    price: 89.99
-  },
-  {
-    id: 4,
-    title: 'Paper Mario',
-    console: 'Nintendo 64',
-    imageUrl: '/assets/images/games/paper mario.jpg',
-    price: 74.99
-  },
-  {
-    id: 5,
-    title: 'Super Mario 3',
-    console: 'Nintendo',
-    imageUrl: '/assets/images/games/super mario 3.jpg',
-    price: 59.99
-  },
-  {
-    id: 6,
-    title: 'Super Mario',
-    console: 'Nintendo',
-    imageUrl: '/assets/images/games/super mario.jpg',
-    price: 49.99
+// Obtener los juegos más recientes de la base de datos
+/** @type {any[]} */
+let latestGames: any[] = [];
+let error = null;
+
+try {
+  const response = await getLatestGames(6); // Obtener los 6 juegos más recientes
+  
+  // Verificar la estructura de la respuesta
+  if (response.games) {
+    latestGames = response.games;
+  } else if (Array.isArray(response)) {
+    latestGames = response;
+  } else if (response.data) {
+    latestGames = response.data;
   }
-];
+} catch (err) {
+  console.error('Error loading latest games:', err);
+  error = err.message;
+  
+  // Si hay error, usar datos de respaldo
+  latestGames = [
+    {
+      id: 1,
+      name: 'Mario 64',
+      console: { name: 'Nintendo 64', slug: 'nintendo-64' },
+      image: 'games/mario64.jpg',
+      price: 79.99,
+      slug: 'mario-64'
+    },
+    {
+      id: 2,
+      name: 'Mario Kart 64',
+      console: { name: 'Nintendo 64', slug: 'nintendo-64' },
+      image: 'games/mario-kart-64.jpg',
+      price: 69.99,
+      slug: 'mario-kart-64'
+    },
+    {
+      id: 3,
+      name: 'Super Metroid',
+      console: { name: 'Super Nintendo', slug: 'super-nintendo' },
+      image: 'games/super-metroid.jpg',
+      price: 89.99,
+      slug: 'super-metroid'
+    }
+  ];
+}
 ---
 
 <MainLayout title="Retro Time - Tienda de Videojuegos Retro">
@@ -68,17 +72,32 @@ const featuredGames = [
       <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold text-white text-center mb-10">Nuevas Entradas</h2>
         
+        {error && (
+          <div class="text-center text-yellow-400 mb-8">
+            <p>Error al cargar los juegos más recientes. Mostrando datos de ejemplo.</p>
+          </div>
+        )}
+        
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {featuredGames.map(game => (
+          {latestGames.map(game => (
             <ProductCard 
               id={game.id}
-              title={game.title}
-              console={game.console}
-              imageUrl={game.imageUrl}
+              title={game.name || game.title}
+              console={game.console?.name || game.console}
+              consoleSlug={game.console?.slug || 'nintendo-64'}
+              imageUrl={game.image ? `http://localhost:8000/storage/${game.image}` : `/assets/images/games/${game.slug || 'default'}.jpg`}
               price={game.price}
+              originalPrice={game.sale_price ? game.price : null}
+              slug={game.slug}
             />
           ))}
         </div>
+        
+        {latestGames.length === 0 && !error && (
+          <div class="text-center text-gray-400">
+            <p>No hay juegos disponibles en este momento.</p>
+          </div>
+        )}
         
         <div class="text-center mt-12">
           <a href="/games" class="inline-block border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white font-bold py-2 px-6 rounded-lg transition duration-300">

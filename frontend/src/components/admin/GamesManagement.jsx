@@ -130,6 +130,13 @@ export default function GamesManagement() {
     try {
       setFormLoading(true);
       const token = localStorage.getItem('auth_token');
+      
+      if (!token) {
+        toastGameError('auth', new Error('No estás autenticado'));
+        window.location.href = '/?showLogin=true';
+        return;
+      }
+      
       const isEditing = !!editingGame;
       
       const url = isEditing 
@@ -143,6 +150,10 @@ export default function GamesManagement() {
         formData.append('_method', 'PUT');
       }
 
+      console.log('Enviando petición a:', url);
+      console.log('Método:', method);
+      console.log('Token:', token.substring(0, 20) + '...');
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -152,14 +163,17 @@ export default function GamesManagement() {
         body: formData
       });
 
+      console.log('Response status:', response.status);
+
       const responseData = await response.json();
+      console.log('Response data:', responseData);
 
       if (response.ok) {
         // Mostrar toast de éxito
         if (isEditing) {
-          toastGameUpdated(responseData.data?.name || editingGame.name);
+          toastGameUpdated(responseData.game?.name || editingGame.name);
         } else {
-          toastGameCreated(responseData.data?.name || 'el juego');
+          toastGameCreated(responseData.game?.name || 'el juego');
         }
 
         // Cerrar formulario y recargar datos
@@ -171,8 +185,13 @@ export default function GamesManagement() {
         if (response.status === 422 && responseData.errors) {
           const firstError = Object.values(responseData.errors)[0][0];
           toastValidationError(firstError);
+        } else if (response.status === 401) {
+          toastGameError('auth', new Error('No autorizado'));
+          window.location.href = '/?showLogin=true';
+        } else if (response.status === 403) {
+          toastGameError('auth', new Error('No tienes permisos de administrador'));
         } else {
-          throw new Error(responseData.message || 'Error en la operación');
+          throw new Error(responseData.message || responseData.error || 'Error en la operación');
         }
       }
     } catch (error) {

@@ -61,7 +61,7 @@ class Game extends Model
     public function mainImage()
     {
         return $this->hasOne(GameImage::class)->where('is_main', 1);
-    }
+    }    
 
     /**
      * NUEVA RELACIÓN: Obtener los items del carrito para este juego
@@ -125,5 +125,26 @@ class Game extends Model
     public function getIsOnSaleAttribute()
     {
         return $this->has_discount;
+    }
+
+    /**
+     * Obtener todas las imágenes (principal + adicionales)
+     * Este es un accessor opcional si quieres usar $game->all_images
+     */
+    public function getAllImagesAttribute()
+    {
+        $images = [];
+        
+        // Agregar imagen principal primero
+        if ($this->image) {
+            $images[] = $this->image;
+        }
+        
+        // Agregar imágenes adicionales
+        foreach ($this->images as $img) {
+            $images[] = $img->image_path;
+        }
+        
+        return $images;
     }
 }

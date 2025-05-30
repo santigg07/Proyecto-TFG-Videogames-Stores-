@@ -296,3 +296,17 @@ export async function checkWishlistStatus(gameId) {
     return { in_wishlist: false };
   }
 }
+
+// Obtener los juegos más recientes
+export async function getLatestGames(limit = 6) {
+  try {
+    const response = await fetch(`${API_URL}/games/latest?limit=${limit}`);
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching latest games:', error);
+    throw error;
+  }
+}

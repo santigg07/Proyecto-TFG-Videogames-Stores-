@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\Console;
+use App\Models\GameImage;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -223,20 +224,137 @@ class GameController extends Controller
      */
     public function show($slug)
     {
-        $game = Game::with(['console', 'categories', 'images'])
-            ->where('slug', $slug)
-            ->firstOrFail();
+        try {
+            $game = Game::with(['console', 'categories', 'images'])
+                ->where('slug', $slug)
+                ->firstOrFail();
+            
+            // Debug: Ver qué imágenes se están cargando
+            Log::info('Juego cargado:', [
+                'id' => $game->id,
+                'name' => $game->name,
+                'image_principal' => $game->image,
+                'imagenes_adicionales' => $game->images->count(),
+                'imagenes_data' => $game->images->toArray()
+            ]);
+            
+            // Juegos relacionados (misma consola y/o categorías)
+            $relatedGames = Game::with(['console'])
+                ->where('console_id', $game->console_id)
+                ->where('id', '!=', $game->id)
+                ->where('stock', '>', 0)
+                ->inRandomOrder()
+                ->limit(6)
+                ->get();
+            
+            // Preparar todas las imágenes
+            $allImages = [];
+            
+            // Agregar imagen principal primero
+            if ($game->image) {
+                $allImages[] = $game->image;
+            }
+            
+            // Agregar imágenes adicionales
+            foreach ($game->images as $img) {
+                $allImages[] = $img->image_path;
+            }
+            
+            Log::info('Todas las imágenes preparadas:', $allImages);
+            
+            return response()->json([
+                'game' => [
+                    'id' => $game->id,
+                    'name' => $game->name,
+                    'slug' => $game->slug,
+                    'description' => $game->description,
+                    'price' => $game->price,
+                    'sale_price' => $game->sale_price,
+                    'stock' => $game->stock,
+                    'image' => $game->image,
+                    'images' => $allImages, // Array con todas las imágenes
+                    'release_year' => $game->release_year,
+                    'condition' => $game->condition,
+                    'manufacturer' => $game->manufacturer,
+                    'includes' => $game->includes,
+                    'console' => [
+                        'id' => $game->console->id,
+                        'name' => $game->console->name,
+                        'slug' => $game->console->slug,
+                    ],
+                    'categories' => $game->categories->map(function($cat) {
+                        return [
+                            'id' => $cat->id,
+                            'name' => $cat->name,
+                            'slug' => $cat->slug
+                        ];
+                    }),
+                    'created_at' => $game->created_at,
+                    'updated_at' => $game->updated_at,
+                ],
+                'relatedGames' => $relatedGames->map(function ($game) {
+                    return [
+                        'id' => $game->id,
+                        'name' => $game->name,
+                        'slug' => $game->slug,
+                        'price' => $game->price,
+                        'sale_price' => $game->sale_price,
+                        'image' => $game->image,
+                        'console' => [
+                            'name' => $game->console->name,
+                            'slug' => $game->console->slug,
+                        ]
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error en show:', [
+                'slug' => $slug,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'error' => 'Juego no encontrado',
+                'message' => $e->getMessage()
+            ], 404);
+        }
+    }
+
+    /**
+     * Obtener los juegos más recientes
+     */
+    public function latest(Request $request)
+    {
+        $limit = $request->get('limit', 6);
         
-        // Juegos relacionados (misma consola y/o categorías)
-        $relatedGames = Game::with(['console'])
-            ->where('console_id', $game->console_id)
-            ->where('id', '!=', $game->id)
-            ->take(4)
+        $games = Game::with(['console'])
+            ->where('stock', '>', 0) // Solo juegos con stock
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
             ->get();
         
+        // Transformar los datos para el frontend
+        $games->transform(function ($game) {
+            return [
+                'id' => $game->id,
+                'name' => $game->name,
+                'slug' => $game->slug,
+                'price' => $game->price,
+                'sale_price' => $game->sale_price,
+                'image' => $game->image,
+                'stock' => $game->stock,
+                'console' => [
+                    'id' => $game->console->id,
+                    'name' => $game->console->name,
+                    'slug' => $game->console->slug
+                ],
+                'created_at' => $game->created_at->toISOString()
+            ];
+        });
+        
         return response()->json([
-            'game' => $game,
-            'relatedGames' => $relatedGames
+            'success' => true,
+            'games' => $games
         ]);
     }
 }
