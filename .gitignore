@@ -1,60 +1,53 @@
-node_modules/\nvendor/\n.env\n.DS_Store
-services:
-  # Servicio Frontend
-  frontend:
-    build:
-      context: ./frontend
-      # No necesitas especificar dockerfile si está en la ubicación por defecto (./Dockerfile)
-    ports:
-      - "4321:4321"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - ./backend/storage/app/public:/app/public/backend-storage
-    depends_on:
-      - backend
+# Dependencies
+node_modules/
+vendor/
 
-  # Servicio Backend
-  backend:
-    build:
-      context: ./backend
-      # No necesitas especificar dockerfile si está en la ubicación por defecto (./Dockerfile)
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/var/www/html
-      - /var/www/html/vendor
-      - ./backend/storage/app/public:/var/www/html/storage/app/public
-    depends_on:
-      - db
-    environment:
-      DB_HOST: db
-      DB_DATABASE: videogames_store
-      DB_USERNAME: 
-      DB_PASSWORD: 
+# Environment files
+.env
+.env.local
+.env.production
+*.env
 
-  # Servicio de Base de Datos    
-  db:
-    image: mysql:8.0
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_DATABASE: videogames_store  
-      MYSQL_ROOT_PASSWORD: root
-    volumes:
-      - mysql_data:/var/lib/mysql
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
 
-  # Servicio phpMyAdmin    
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    ports:
-      - "8080:80"
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-      MYSQL_ROOT_PASSWORD: root
-    depends_on:
-      - db
+# Frontend
+frontend/dist/
+frontend/.astro/
+frontend/node_modules/
+frontend/.env
+frontend/.env.*
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
 
-volumes:
-  mysql_data:
+# Backend
+backend/vendor/
+backend/node_modules/
+backend/public/hot
+backend/public/storage
+backend/storage/*.key
+backend/.env
+backend/.env.backup
+backend/.phpunit.result.cache
+backend/Homestead.json
+backend/Homestead.yaml
+backend/npm-debug.log
+backend/yarn-error.log
+backend/.idea
+backend/.vscode
+backend/storage/logs/*.log
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+
+# Docker
+docker/volumes/
+*.log
+
+# OS files
+Thumbs.db
