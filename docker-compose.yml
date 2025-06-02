@@ -30,8 +30,8 @@ services:
     environment:
       DB_HOST: db
       DB_DATABASE: videogames_store
-      DB_USERNAME: root
-      DB_PASSWORD: root
+      DB_USERNAME: 
+      DB_PASSWORD: 
 
   # Servicio de Base de Datos    
   db:
@@ -40,7 +40,7 @@ services:
       - "3306:3306"
     environment:
       MYSQL_DATABASE: videogames_store  
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: 
     volumes:
       - mysql_data:/var/lib/mysql
 
@@ -52,7 +52,7 @@ services:
     environment:
       PMA_HOST: db
       PMA_PORT: 3306
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: 
     depends_on:
       - db
 
