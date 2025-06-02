@@ -30,8 +30,8 @@ services:
     environment:
       DB_HOST: db
       DB_DATABASE: videogames_store
-      DB_USERNAME: laravel
-      DB_PASSWORD: laravel
+      DB_USERNAME: 
+      DB_PASSWORD: 
 
   # Servicio de Base de Datos    
   db:
